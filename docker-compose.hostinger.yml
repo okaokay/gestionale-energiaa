@@ -1,0 +1,37 @@
+# Docker Compose per Hostinger (Componi da URL)
+# Questo file clona il tuo compose locale ma usa `image:` già puntata a Docker Hub.
+# Nota: il campo `version` è obsoleto in Compose v2, rimosso per evitare warning.
+
+services:
+  gestionale-energia:
+    image: docker.io/okaokay/gestionale-energia:hostinger-v1
+    pull_policy: always
+    container_name: gestionale-energia-hostinger
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - TZ=Europe/Rome
+      - JWT_SECRET=hostinger-gestionale-energia-jwt-secret-2024
+      - JWT_EXPIRES_IN=7d
+      - DATABASE_PATH=/app/backend/database/database.sqlite
+      - INIT_DB=true
+    ports:
+      - "8080:3001"
+    volumes:
+      - uploads_data:/app/uploads
+      - database_data:/app/backend/database
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    # Avvio con migrazione automatica basata su DATABASE_PATH
+    command: ["node", "scripts/start-with-migrate.js"]
+
+volumes:
+  uploads_data:
+    driver: local
+  database_data:
+    driver: local

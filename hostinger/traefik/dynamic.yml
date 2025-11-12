@@ -1,0 +1,12 @@
+http:
+  routers:
+    gestionale:
+      rule: "Host(`gmgestionale.cloud`,`www.gmgestionale.cloud`,`srv1072066.hstgr.cloud`)"
+      entryPoints:
+        - web
+      service: gestionale
+  services:
+    gestionale:
+      loadBalancer:
+        servers:
+          - url: "http://gestionale-energia:3001"

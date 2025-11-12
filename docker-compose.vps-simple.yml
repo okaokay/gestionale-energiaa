@@ -1,0 +1,105 @@
+name: gestionale-energia
+
+services:
+  traefik:
+    image: traefik:v2.11
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.web.http.redirections.entryPoint.to=websecure
+      - --entrypoints.web.http.redirections.entryPoint.scheme=https
+      - --certificatesresolvers.le.acme.httpchallenge=true
+      - --certificatesresolvers.le.acme.httpchallenge.entrypoint=web
+      - --certificatesresolvers.le.acme.email=admin@gmgestionale.cloud
+      - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
+      - --accesslog=true
+      - --log.level=INFO
+    environment:
+      TZ: Europe/Rome
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik-certs:/letsencrypt
+    networks:
+      - proxy
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gestionale-energia-app:latest
+    container_name: gestionale-energia-app
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      TZ: Europe/Rome
+      IS_DOCKER: "true"
+      FORCE_SEED_RESTORE: "true"
+      # URL applicazione
+      FRONTEND_URL: https://gmgestionale.cloud
+      BACKEND_URL: https://gmgestionale.cloud
+      CORS_ORIGIN: https://gmgestionale.cloud,https://www.gmgestionale.cloud
+      # Proxy e cookie sicuri dietro Traefik
+      TRUST_PROXY: "true"
+      SECURE_COOKIES: "true"
+      # Database (SQLite su volume persistente)
+      DATABASE_PATH: /app/data/gestionale_energia.db
+      # JWT
+      JWT_SECRET: super-secure-random-jwt-key-change-later-2025-10-31-gmgestionale
+      JWT_EXPIRES_IN: 7d
+      # Email mittente (opzionale)
+      EMAIL_SENDER_NAME: Gestionale Energia
+      EMAIL_SENDER_ADDRESS: noreply@gmgestionale.cloud
+      # Brevo SMTP/API (sostituisci la API key prima del deploy)
+      BREVO_SMTP_USER: apikey
+      BREVO_SMTP_PASS: REPLACE_WITH_BREVO_API_KEY
+      BREVO_API_KEY: REPLACE_WITH_BREVO_API_KEY
+      # Redis (opzionale)
+      REDIS_HOST: 127.0.0.1
+      REDIS_PORT: 6379
+      # Cron
+      CRON_ENABLED: "true"
+      CRON_EXPIRY_ALERTS: 0 9 * * *
+    restart: unless-stopped
+    volumes:
+      - uploads_data:/app/uploads
+      - database_data:/app/data
+    expose:
+      - "3001"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3001/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.gmgestionale.rule=Host(`gmgestionale.cloud`,`www.gmgestionale.cloud`)"
+      - "traefik.http.routers.gmgestionale.entrypoints=websecure"
+      - "traefik.http.routers.gmgestionale.tls.certresolver=le"
+      - "traefik.http.services.gmgestionale.loadbalancer.server.port=3001"
+      # Redirect www to non-www
+      - "traefik.http.middlewares.redirect-www.redirectregex.regex=^https://www\\.gmgestionale\\.cloud/(.*)"
+      - "traefik.http.middlewares.redirect-www.redirectregex.replacement=https://gmgestionale.cloud/$${1}"
+      - "traefik.http.routers.gmgestionale.middlewares=redirect-www"
+    networks:
+      - proxy
+
+volumes:
+  traefik-certs:
+    driver: local
+  uploads_data:
+    driver: local
+  database_data:
+    driver: local
+
+networks:
+  proxy:
+    driver: bridge

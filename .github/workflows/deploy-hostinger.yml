@@ -1,0 +1,47 @@
+name: Deploy to Hostinger (Traefik)
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH to Hostinger VPS
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.HOSTINGER_HOST }}
+          username: ${{ secrets.HOSTINGER_USER }}
+          key: ${{ secrets.HOSTINGER_SSH_KEY }}
+          port: ${{ secrets.HOSTINGER_PORT || 22 }}
+          script: |
+            set -e
+            REPO_URL="https://github.com/${{ github.repository }}.git"
+            APP_DIR="/opt/gestionale-energia"
+
+            # Clone repository if missing, otherwise update
+            if [ ! -d "$APP_DIR" ]; then
+              mkdir -p /opt
+              cd /opt
+              git clone "$REPO_URL" gestionale-energia
+            fi
+
+            cd "$APP_DIR"
+            git fetch --all
+            git reset --hard origin/main
+
+            # Ensure Traefik ACME storage exists with proper permissions
+            mkdir -p hostinger/traefik/letsencrypt
+            if [ ! -f hostinger/traefik/letsencrypt/acme.json ]; then
+              touch hostinger/traefik/letsencrypt/acme.json
+              chmod 600 hostinger/traefik/letsencrypt/acme.json
+            fi
+
+            # Rebuild and restart services using Traefik compose
+            docker-compose -f hostinger/docker-compose.traefik.yml down || true
+            docker-compose -f hostinger/docker-compose.traefik.yml up -d --build
+
+            # Show status
+            docker-compose -f hostinger/docker-compose.traefik.yml ps
+            docker-compose -f hostinger/docker-compose.traefik.yml logs -f --tail=200 --no-color & sleep 10; pkill -f "docker-compose .* logs -f" || true

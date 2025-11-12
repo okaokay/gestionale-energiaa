@@ -1,0 +1,250 @@
+{
+
+  "esempi_clienti_e_contratti": [
+    {
+      "cliente": {
+        "tipo_record": "cliente_privato",
+        "nome": "Giuseppe",
+        "cognome": "Rossi",
+        "codice_fiscale": "RSSGPP75H15F205K",
+        "data_nascita": "1975-06-15",
+        "email_principale": "giuseppe.rossi@gmail.com",
+        "telefono_mobile": "3389876543",
+        "via_residenza": "Via Roma",
+        "civico_residenza": "25",
+        "cap_residenza": "00185",
+        "citta_residenza": "Roma",
+        "provincia_residenza": "RM",
+        "tipo_documento": "Carta d'identità",
+        "numero_documento": "AR1234567",
+        "ente_rilascio": "Comune di Roma",
+        "data_scadenza_documento": "2029-06-15",
+        "iban": "IT60X0542811101000000789012",
+        "consenso_privacy": 1,
+        "consenso_marketing": 0
+      },
+      "contratti": [
+        {
+          "tipo_record": "contratto_luce",
+          "numero_contratto": "EE20240156",
+          "pod": "IT001E87654321",
+          "fornitore": "Edison Energia",
+          "data_attivazione": "2024-03-15",
+          "data_scadenza": "2026-03-15",
+          "prezzo_energia": "0.1085",
+          "stato_contratto": "attivo"
+        },
+        {
+          "tipo_record": "contratto_gas",
+          "numero_contratto": "GAS20240089",
+          "pdr": "09876543210987",
+          "fornitore": "A2A Energia",
+          "data_attivazione": "2024-03-15",
+          "data_scadenza": "2026-03-15",
+          "prezzo_gas": "0.4275",
+          "stato_contratto": "attivo"
+        }
+      ]
+    },
+    {
+      "cliente": {
+        "tipo_record": "cliente_privato",
+        "nome": "Laura",
+        "cognome": "Verdi",
+        "codice_fiscale": "VRDLRA90A01H501Z",
+        "data_nascita": "1990-01-01",
+        "email_principale": "laura.verdi@outlook.it",
+        "telefono_mobile": "3471234567",
+        "via_residenza": "Via Nazionale",
+        "civico_residenza": "78",
+        "cap_residenza": "50123",
+        "citta_residenza": "Firenze",
+        "provincia_residenza": "FI",
+        "tipo_documento": "Patente di guida",
+        "numero_documento": "FI9876543",
+        "ente_rilascio": "Motorizzazione Civile di Firenze",
+        "data_scadenza_documento": "2034-01-01",
+        "iban": "IT30X0542811101000000456789",
+        "consenso_privacy": 1,
+        "consenso_marketing": 1
+      },
+      "contratti": [
+        {
+          "tipo_record": "contratto_luce",
+          "numero_contratto": "EE20240287",
+          "pod": "IT001E98765432",
+          "fornitore": "Illumia",
+          "data_attivazione": "2024-06-01",
+          "data_scadenza": "2026-06-01",
+          "prezzo_energia": "0.1125",
+          "stato_contratto": "attivo"
+        },
+        {
+          "tipo_record": "contratto_gas",
+          "numero_contratto": "GAS20240134",
+          "pdr": "98765432109876",
+          "fornitore": "Wekiwi",
+          "data_attivazione": "2024-06-01",
+          "data_scadenza": "2026-06-01",
+          "prezzo_gas": "0.4650",
+          "stato_contratto": "attivo"
+        }
+      ]
+    },
+    {
+      "cliente": {
+        "tipo_record": "cliente_privato",
+        "nome": "Marco",
+        "cognome": "Bianchi",
+        "codice_fiscale": "BNCMRC85M15H501X",
+        "data_nascita": "1985-08-15",
+        "email_principale": "marco.bianchi@libero.it",
+        "telefono_mobile": "3351234567",
+        "via_residenza": "Via Milano",
+        "civico_residenza": "42",
+        "cap_residenza": "20100",
+        "citta_residenza": "Milano",
+        "provincia_residenza": "MI",
+        "tipo_documento": "Carta d'identità",
+        "numero_documento": "MI7654321",
+        "ente_rilascio": "Comune di Milano",
+        "data_scadenza_documento": "2030-08-15",
+        "iban": "IT90X0542811101000000123456",
+        "consenso_privacy": 1,
+        "consenso_marketing": 0
+      },
+      "contratti": [
+        {
+          "tipo_record": "contratto_luce",
+          "numero_contratto": "EE20240345",
+          "pod": "IT001E12345678",
+          "fornitore": "Enel Energia",
+          "data_attivazione": "2024-04-10",
+          "data_scadenza": "2026-04-10",
+          "prezzo_energia": "0.0950",
+          "stato_contratto": "attivo"
+        }
+      ]
+    },
+    {
+      "cliente": {
+        "tipo_record": "cliente_privato",
+        "nome": "Anna",
+        "cognome": "Neri",
+        "codice_fiscale": "NRIMAR80B15F205Y",
+        "data_nascita": "1980-02-15",
+        "email_principale": "anna.neri@yahoo.it",
+        "telefono_mobile": "3381234567",
+        "via_residenza": "Via Torino",
+        "civico_residenza": "15",
+        "cap_residenza": "10100",
+        "citta_residenza": "Torino",
+        "provincia_residenza": "TO",
+        "tipo_documento": "Passaporto",
+        "numero_documento": "YA1234567",
+        "ente_rilascio": "Questura di Torino",
+        "data_scadenza_documento": "2028-02-15",
+        "iban": "IT70X0542811101000000987654",
+        "consenso_privacy": 1,
+        "consenso_marketing": 1
+      },
+      "contratti": [
+        {
+          "tipo_record": "contratto_gas",
+          "numero_contratto": "GAS20240201",
+          "pdr": "11223344556677",
+          "fornitore": "Eni Gas e Luce",
+          "data_attivazione": "2024-05-01",
+          "data_scadenza": "2026-05-01",
+          "prezzo_gas": "0.4125",
+          "stato_contratto": "attivo"
+        }
+      ]
+    }
+  ],
+  
+  "campi_obbligatori": {
+    "cliente_privato": [
+      "tipo_record",
+      "nome",
+      "cognome", 
+      "codice_fiscale",
+      "email_principale"
+    ],
+    "contratto_luce": [
+      "tipo_record",
+      "numero_contratto",
+      "pod",
+      "fornitore",
+      "stato_contratto"
+    ],
+    "contratto_gas": [
+      "tipo_record",
+      "numero_contratto", 
+      "pdr",
+      "fornitore",
+      "stato_contratto"
+    ]
+  },
+  
+  "associazioni_automatiche": {
+    "descrizione": "I contratti vengono automaticamente associati ai clienti tramite:",
+    "metodi": [
+      "nome + cognome + codice_fiscale",
+      "email_principale"
+    ]
+  },
+  
+  "fornitori_validi": [
+    "Enel Energia",
+    "Eni Gas e Luce",
+    "Edison Energia", 
+    "A2A Energia",
+    "Illumia",
+    "Wekiwi",
+    "Hera Comm",
+    "Acea Energia",
+    "Sorgenia",
+    "Green Network Energy"
+  ],
+  
+  "formati_validazione": {
+    "pod": "IT001E + 8 cifre (es: IT001E87654321)",
+    "pdr": "14 cifre consecutive (es: 09876543210987)",
+    "codice_fiscale": "Formato italiano standard (es: RSSGPP75H15F205K)",
+    "iban": "Formato italiano IT + 25 caratteri (es: IT60X0542811101000000789012)",
+    "telefono_mobile": "10 cifre con prefisso 33X/34X/38X (es: 3389876543)",
+    "data": "Formato YYYY-MM-DD (es: 2024-03-15)"
+  },
+  
+  "stati_contratto_validi": [
+    "attivo",
+    "sospeso", 
+    "chiuso",
+    "in_attivazione",
+    "scaduto"
+  ],
+  
+  "tipi_documento_validi": [
+    "Carta d'identità",
+    "Patente di guida",
+    "Passaporto"
+  ],
+  
+  "province_italiane": [
+    "AG", "AL", "AN", "AO", "AR", "AP", "AT", "AV", "BA", "BT", "BL", "BN", "BG", "BI", "BO", "BZ", "BS", "BR", "CA", "CL", "CB", "CI", "CE", "CT", "CZ", "CH", "CO", "CS", "CR", "KR", "CN", "EN", "FM", "FE", "FI", "FG", "FC", "FR", "GE", "GO", "GR", "IM", "IS", "SP", "AQ", "LT", "LE", "LC", "LI", "LO", "LU", "MC", "MN", "MS", "MT", "VS", "ME", "MI", "MO", "MB", "NA", "NO", "NU", "OG", "OT", "OR", "PD", "PA", "PR", "PV", "PG", "PU", "PE", "PC", "PI", "PT", "PN", "PZ", "PO", "RG", "RA", "RC", "RE", "RI", "RN", "RM", "RO", "SA", "SS", "SV", "SI", "SR", "SO", "TA", "TE", "TR", "TO", "TP", "TN", "TV", "TS", "UD", "VA", "VE", "VB", "VC", "VR", "VV", "VI", "VT"
+  ],
+  
+  "range_prezzi_realistici": {
+    "energia_elettrica": {
+      "minimo": "0.0850",
+      "massimo": "0.1350",
+      "unita": "€/kWh"
+    },
+    "gas_naturale": {
+      "minimo": "0.3800", 
+      "massimo": "0.6500",
+      "unita": "€/Smc"
+    }
+  }
+}

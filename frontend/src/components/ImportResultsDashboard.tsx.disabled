@@ -1,0 +1,450 @@
+import React, { useState, useEffect } from 'react';
+import {
+    Box,
+    Card,
+    CardContent,
+    Typography,
+    Grid,
+    Chip,
+    LinearProgress,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Paper,
+    Alert,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails,
+    IconButton,
+    Tooltip,
+    Button,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions
+} from '@mui/material';
+import {
+    CheckCircle,
+    Error,
+    Warning,
+    ExpandMore,
+    Refresh,
+    Download,
+    Visibility,
+    TrendingUp,
+    People,
+    Business,
+    ElectricBolt,
+    LocalGasStation,
+    AccountBalance
+} from '@mui/icons-material';
+
+interface ImportSummary {
+    clientiPrivati: { created: number; updated: number; errors: number };
+    clientiAziende: { created: number; updated: number; errors: number };
+    contrattiLuce: { created: number; updated: number; errors: number };
+    contrattiGas: { created: number; updated: number; errors: number };
+    compensi: { created: number; errors: number };
+}
+
+interface ImportResult {
+    importId: string;
+    success: boolean;
+    totalRecords: number;
+    processedRecords: number;
+    successfulRecords: number;
+    failedRecords: number;
+    errors: string[];
+    warnings: string[];
+    summary: ImportSummary;
+    startTime: string;
+    endTime: string;
+}
+
+interface ImportResultsDashboardProps {
+    importId?: string;
+    onClose?: () => void;
+}
+
+const ImportResultsDashboard: React.FC<ImportResultsDashboardProps> = ({ importId, onClose }) => {
+    const [result, setResult] = useState<ImportResult | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [detailsOpen, setDetailsOpen] = useState(false);
+
+    const fetchResult = async () => {
+        if (!importId) return;
+
+        setLoading(true);
+        setError(null);
+
+        try {
+            const response = await fetch(`/api/unified-import/result/${importId}`);
+            if (!response.ok) {
+                throw new Error('Risultato import non trovato');
+            }
+            const data = await response.json();
+            setResult(data);
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (importId) {
+            fetchResult();
+        }
+    }, [importId]);
+
+    const getSuccessRate = () => {
+        if (!result || result.totalRecords === 0) return 0;
+        return Math.round((result.successfulRecords / result.totalRecords) * 100);
+    };
+
+    const getStatusColor = () => {
+        if (!result) return 'default';
+        if (result.success && result.errors.length === 0) return 'success';
+        if (result.success && result.errors.length > 0) return 'warning';
+        return 'error';
+    };
+
+    const getStatusIcon = () => {
+        const color = getStatusColor();
+        switch (color) {
+            case 'success': return <CheckCircle color="success" />;
+            case 'warning': return <Warning color="warning" />;
+            case 'error': return <Error color="error" />;
+            default: return null;
+        }
+    };
+
+    const downloadReport = () => {
+        if (!result) return;
+
+        const report = {
+            importId: result.importId,
+            timestamp: new Date().toISOString(),
+            summary: result.summary,
+            statistics: {
+                totalRecords: result.totalRecords,
+                processedRecords: result.processedRecords,
+                successfulRecords: result.successfulRecords,
+                failedRecords: result.failedRecords,
+                successRate: getSuccessRate()
+            },
+            errors: result.errors,
+            warnings: result.warnings
+        };
+
+        const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `import-report-${result.importId}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
+    if (loading) {
+        return (
+            <Box sx={{ p: 3 }}>
+                <Typography variant="h6" gutterBottom>
+                    Caricamento risultati...
+                </Typography>
+                <LinearProgress />
+            </Box>
+        );
+    }
+
+    if (error) {
+        return (
+            <Alert severity="error" sx={{ m: 2 }}>
+                {error}
+                <Button onClick={fetchResult} sx={{ ml: 2 }}>
+                    Riprova
+                </Button>
+            </Alert>
+        );
+    }
+
+    if (!result) {
+        return (
+            <Alert severity="info" sx={{ m: 2 }}>
+                Nessun risultato da visualizzare
+            </Alert>
+        );
+    }
+
+    return (
+        <Box sx={{ p: 3 }}>
+            {/* Header */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    {getStatusIcon()}
+                    <Typography variant="h5">
+                        Risultati Import
+                    </Typography>
+                    <Chip
+                        label={result.success ? 'Completato' : 'Fallito'}
+                        color={getStatusColor()}
+                        variant="outlined"
+                    />
+                </Box>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Tooltip title="Aggiorna">
+                        <IconButton onClick={fetchResult}>
+                            <Refresh />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Scarica Report">
+                        <IconButton onClick={downloadReport}>
+                            <Download />
+                        </IconButton>
+                    </Tooltip>
+                    <Button
+                        variant="outlined"
+                        startIcon={<Visibility />}
+                        onClick={() => setDetailsOpen(true)}
+                    >
+                        Dettagli
+                    </Button>
+                    {onClose && (
+                        <Button variant="contained" onClick={onClose}>
+                            Chiudi
+                        </Button>
+                    )}
+                </Box>
+            </Box>
+
+            {/* Statistics Cards */}
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+                <Grid item xs={12} sm={6} md={3}>
+                    <Card>
+                        <CardContent>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                <TrendingUp color="primary" />
+                                <Box>
+                                    <Typography variant="h4">{result.totalRecords}</Typography>
+                                    <Typography color="textSecondary">Record Totali</Typography>
+                                </Box>
+                            </Box>
+                        </CardContent>
+                    </Card>
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                    <Card>
+                        <CardContent>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                <CheckCircle color="success" />
+                                <Box>
+                                    <Typography variant="h4">{result.successfulRecords}</Typography>
+                                    <Typography color="textSecondary">Successi</Typography>
+                                </Box>
+                            </Box>
+                        </CardContent>
+                    </Card>
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                    <Card>
+                        <CardContent>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                <Error color="error" />
+                                <Box>
+                                    <Typography variant="h4">{result.failedRecords}</Typography>
+                                    <Typography color="textSecondary">Errori</Typography>
+                                </Box>
+                            </Box>
+                        </CardContent>
+                    </Card>
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                    <Card>
+                        <CardContent>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                <TrendingUp color="primary" />
+                                <Box>
+                                    <Typography variant="h4">{getSuccessRate()}%</Typography>
+                                    <Typography color="textSecondary">Tasso Successo</Typography>
+                                </Box>
+                            </Box>
+                        </CardContent>
+                    </Card>
+                </Grid>
+            </Grid>
+
+            {/* Summary by Type */}
+            <Card sx={{ mb: 3 }}>
+                <CardContent>
+                    <Typography variant="h6" gutterBottom>
+                        Riepilogo per Tipo
+                    </Typography>
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} md={6}>
+                            <TableContainer component={Paper} variant="outlined">
+                                <Table size="small">
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell>Tipo</TableCell>
+                                            <TableCell align="right">Creati</TableCell>
+                                            <TableCell align="right">Aggiornati</TableCell>
+                                            <TableCell align="right">Errori</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        <TableRow>
+                                            <TableCell>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                    <People fontSize="small" />
+                                                    Clienti Privati
+                                                </Box>
+                                            </TableCell>
+                                            <TableCell align="right">{result.summary.clientiPrivati.created}</TableCell>
+                                            <TableCell align="right">{result.summary.clientiPrivati.updated}</TableCell>
+                                            <TableCell align="right">{result.summary.clientiPrivati.errors}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                    <Business fontSize="small" />
+                                                    Clienti Aziende
+                                                </Box>
+                                            </TableCell>
+                                            <TableCell align="right">{result.summary.clientiAziende.created}</TableCell>
+                                            <TableCell align="right">{result.summary.clientiAziende.updated}</TableCell>
+                                            <TableCell align="right">{result.summary.clientiAziende.errors}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                    <ElectricBolt fontSize="small" />
+                                                    Contratti Luce
+                                                </Box>
+                                            </TableCell>
+                                            <TableCell align="right">{result.summary.contrattiLuce.created}</TableCell>
+                                            <TableCell align="right">{result.summary.contrattiLuce.updated}</TableCell>
+                                            <TableCell align="right">{result.summary.contrattiLuce.errors}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                    <LocalGasStation fontSize="small" />
+                                                    Contratti Gas
+                                                </Box>
+                                            </TableCell>
+                                            <TableCell align="right">{result.summary.contrattiGas.created}</TableCell>
+                                            <TableCell align="right">{result.summary.contrattiGas.updated}</TableCell>
+                                            <TableCell align="right">{result.summary.contrattiGas.errors}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                    <AccountBalance fontSize="small" />
+                                                    Compensi
+                                                </Box>
+                                            </TableCell>
+                                            <TableCell align="right">{result.summary.compensi.created}</TableCell>
+                                            <TableCell align="right">-</TableCell>
+                                            <TableCell align="right">{result.summary.compensi.errors}</TableCell>
+                                        </TableRow>
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        </Grid>
+                    </Grid>
+                </CardContent>
+            </Card>
+
+            {/* Errors and Warnings */}
+            {(result.errors.length > 0 || result.warnings.length > 0) && (
+                <Card>
+                    <CardContent>
+                        <Typography variant="h6" gutterBottom>
+                            Errori e Avvisi
+                        </Typography>
+                        
+                        {result.errors.length > 0 && (
+                            <Accordion>
+                                <AccordionSummary expandIcon={<ExpandMore />}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <Error color="error" />
+                                        <Typography>Errori ({result.errors.length})</Typography>
+                                    </Box>
+                                </AccordionSummary>
+                                <AccordionDetails>
+                                    {result.errors.map((error, index) => (
+                                        <Alert key={index} severity="error" sx={{ mb: 1 }}>
+                                            {error}
+                                        </Alert>
+                                    ))}
+                                </AccordionDetails>
+                            </Accordion>
+                        )}
+
+                        {result.warnings.length > 0 && (
+                            <Accordion>
+                                <AccordionSummary expandIcon={<ExpandMore />}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <Warning color="warning" />
+                                        <Typography>Avvisi ({result.warnings.length})</Typography>
+                                    </Box>
+                                </AccordionSummary>
+                                <AccordionDetails>
+                                    {result.warnings.map((warning, index) => (
+                                        <Alert key={index} severity="warning" sx={{ mb: 1 }}>
+                                            {warning}
+                                        </Alert>
+                                    ))}
+                                </AccordionDetails>
+                            </Accordion>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* Details Dialog */}
+            <Dialog open={detailsOpen} onClose={() => setDetailsOpen(false)} maxWidth="md" fullWidth>
+                <DialogTitle>Dettagli Import</DialogTitle>
+                <DialogContent>
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6}>
+                            <Typography variant="subtitle2">ID Import:</Typography>
+                            <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
+                                {result.importId}
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <Typography variant="subtitle2">Durata:</Typography>
+                            <Typography variant="body2">
+                                {new Date(result.endTime).getTime() - new Date(result.startTime).getTime()} ms
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <Typography variant="subtitle2">Inizio:</Typography>
+                            <Typography variant="body2">
+                                {new Date(result.startTime).toLocaleString()}
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <Typography variant="subtitle2">Fine:</Typography>
+                            <Typography variant="body2">
+                                {new Date(result.endTime).toLocaleString()}
+                            </Typography>
+                        </Grid>
+                    </Grid>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setDetailsOpen(false)}>Chiudi</Button>
+                </DialogActions>
+            </Dialog>
+        </Box>
+    );
+};
+
+export default ImportResultsDashboard;

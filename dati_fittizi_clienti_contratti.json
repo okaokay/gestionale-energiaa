@@ -1,0 +1,237 @@
+{
+  "clienti_privati": {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "nome": "Giuseppe",
+    "cognome": "Rossi",
+    "codice_fiscale": "RSSGPP75H15F205K",
+    "data_nascita": "1975-06-15",
+    "email_principale": "giuseppe.rossi@gmail.com",
+    "telefono_mobile": "3389876543",
+    "via_residenza": "Via Roma",
+    "civico_residenza": "25",
+    "cap_residenza": "00185",
+    "citta_residenza": "Roma",
+    "provincia_residenza": "RM",
+    "tipo_documento": "Carta d'identità",
+    "numero_documento": "AR1234567",
+    "ente_rilascio": "Comune di Roma",
+    "data_scadenza_documento": "2029-06-15",
+    "iban": "IT60X0542811101000000789012",
+    "consenso_privacy": 1,
+    "consenso_marketing": 0,
+    "data_consenso": "2024-03-10T14:25:00Z",
+    "created_by": "user-12345",
+    "created_at": "2024-03-10T14:25:00Z"
+  },
+  
+  "contratti_luce": {
+    "id": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+    "cliente_privato_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "tipo_cliente": "privato",
+    "numero_contratto": "EE20240156",
+    "pod": "IT001E87654321",
+    "fornitore": "Edison Energia",
+    "data_attivazione": "2024-03-15",
+    "data_scadenza": "2026-03-15",
+    "prezzo_energia": "0.1085",
+    "stato": "attivo",
+    "created_by": "user-12345",
+    "created_at": "2024-03-10T14:25:00Z"
+  },
+  
+  "contratti_gas": {
+    "id": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+    "cliente_privato_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "tipo_cliente": "privato",
+    "numero_contratto": "GAS20240089",
+    "pdr": "09876543210987",
+    "fornitore": "A2A Energia",
+    "data_attivazione": "2024-03-15",
+    "data_scadenza": "2026-03-15",
+    "prezzo_gas": "0.4275",
+    "stato": "attivo",
+    "created_by": "user-12345",
+    "created_at": "2024-03-10T14:25:00Z"
+  },
+  
+  "esempi_valori_alternativi": {
+    "fornitori_energia": [
+      "Enel Energia",
+      "Eni Gas e Luce", 
+      "Edison Energia",
+      "A2A Energia",
+      "Hera Comm",
+      "Acea Energia",
+      "Sorgenia",
+      "Green Network Energy",
+      "Illumia",
+      "Wekiwi"
+    ],
+    
+    "tipi_documento": [
+      "Carta d'identità",
+      "Patente di guida",
+      "Passaporto"
+    ],
+    
+    "stati_contratto": [
+      "attivo",
+      "sospeso",
+      "chiuso",
+      "in_attivazione",
+      "scaduto"
+    ],
+    
+    "province_italiane": [
+      "AG", "AL", "AN", "AO", "AR", "AP", "AT", "AV", "BA", "BT", "BL", "BN", "BG", "BI", "BO", "BZ", "BS", "BR", "CA", "CL", "CB", "CI", "CE", "CT", "CZ", "CH", "CO", "CS", "CR", "KR", "CN", "EN", "FM", "FE", "FI", "FG", "FC", "FR", "GE", "GO", "GR", "IM", "IS", "SP", "AQ", "LT", "LE", "LC", "LI", "LO", "LU", "MC", "MN", "MS", "MT", "VS", "ME", "MI", "MO", "MB", "NA", "NO", "NU", "OG", "OT", "OR", "PD", "PA", "PR", "PV", "PG", "PU", "PE", "PC", "PI", "PT", "PN", "PZ", "PO", "RG", "RA", "RC", "RE", "RI", "RN", "RM", "RO", "SA", "SS", "SV", "SI", "SR", "SO", "TA", "TE", "TR", "TO", "TP", "TN", "TV", "TS", "UD", "VA", "VE", "VB", "VC", "VR", "VV", "VI", "VT"
+    ],
+    
+    "range_prezzi": {
+      "prezzo_energia_min": "0.0850",
+      "prezzo_energia_max": "0.1350",
+      "prezzo_gas_min": "0.3800",
+      "prezzo_gas_max": "0.6500"
+    },
+    
+    "formati_codici": {
+      "pod_format": "IT001E########",
+      "pdr_format": "##############",
+      "codice_fiscale_format": "AAABBB##A##A###A",
+      "iban_format": "IT##A###################"
+    },
+    
+    "esempi_reali": {
+      "pod_validi": [
+        "IT001E87654321",
+        "IT001E12345678",
+        "IT001E98765432",
+        "IT001E11223344"
+      ],
+      "pdr_validi": [
+        "09876543210987",
+        "12345678901234",
+        "98765432109876",
+        "11223344556677"
+      ],
+      "codici_fiscali_validi": [
+        "RSSGPP75H15F205K",
+        "BNCMRC85M15H501X",
+        "VRDLRA90A01H501Z",
+        "NRIMAR80B15F205Y"
+      ],
+      "iban_validi": [
+        "IT60X0542811101000000789012",
+        "IT90X0542811101000000123456",
+        "IT30X0542811101000000456789",
+        "IT70X0542811101000000987654"
+      ]
+    }
+  },
+  
+  "template_completo_cliente": {
+    "anagrafica": {
+      "id": "d4e5f6g7-h8i9-0123-defg-456789012345",
+      "nome": "Laura",
+      "cognome": "Verdi",
+      "codice_fiscale": "VRDLRA90A01H501Z",
+      "data_nascita": "1990-01-01",
+      "email_principale": "laura.verdi@outlook.it",
+      "telefono_mobile": "3471234567"
+    },
+    
+    "residenza": {
+      "via_residenza": "Via Nazionale",
+      "civico_residenza": "78",
+      "cap_residenza": "50123",
+      "citta_residenza": "Firenze",
+      "provincia_residenza": "FI"
+    },
+    
+    "documenti": {
+      "tipo_documento": "Patente di guida",
+      "numero_documento": "FI9876543",
+      "ente_rilascio": "Motorizzazione Civile di Firenze",
+      "data_scadenza_documento": "2034-01-01"
+    },
+    
+    "bancari": {
+      "iban": "IT30X0542811101000000456789"
+    },
+    
+    "consensi": {
+      "consenso_privacy": 1,
+      "consenso_marketing": 1,
+      "data_consenso": "2024-05-20T09:15:00Z"
+    },
+    
+    "sistema": {
+      "created_by": "user-67890",
+      "created_at": "2024-05-20T09:15:00Z"
+    },
+    
+    "contratto_luce": {
+      "id": "e5f6g7h8-i9j0-1234-efgh-567890123456",
+      "numero_contratto": "EE20240287",
+      "pod": "IT001E98765432",
+      "fornitore": "Illumia",
+      "data_attivazione": "2024-06-01",
+      "data_scadenza": "2026-06-01",
+      "prezzo_energia": "0.1125"
+    },
+    
+    "contratto_gas": {
+      "id": "f6g7h8i9-j0k1-2345-fghi-678901234567",
+      "numero_contratto": "GAS20240134",
+      "pdr": "98765432109876",
+      "fornitore": "Wekiwi",
+      "data_attivazione": "2024-06-01",
+      "data_scadenza": "2026-06-01",
+      "prezzo_gas": "0.4650"
+    }
+  },
+  
+  "note_implementazione": {
+    "descrizione": "File chiave-valore con dati reali basato sull'analisi del file insert-10-clienti-privati.cjs",
+    "versione": "2.0 - Valori reali",
+    "data_aggiornamento": "2024-12-27",
+    "tabelle_identificate": [
+      "clienti_privati",
+      "contratti_luce", 
+      "contratti_gas"
+    ],
+    "campi_obbligatori": {
+      "clienti_privati": ["id", "nome", "cognome", "codice_fiscale", "created_by"],
+      "contratti_luce": ["id", "cliente_privato_id", "numero_contratto", "pod", "fornitore", "stato"],
+      "contratti_gas": ["id", "cliente_privato_id", "numero_contratto", "pdr", "fornitore", "stato"]
+    },
+    "relazioni": {
+      "contratti_luce.cliente_privato_id": "clienti_privati.id",
+      "contratti_gas.cliente_privato_id": "clienti_privati.id"
+    },
+    "validazioni_implementate": {
+      "codice_fiscale": "Formato italiano standard con controllo carattere",
+      "pod": "Formato IT001E + 8 cifre numeriche",
+      "pdr": "14 cifre numeriche consecutive",
+      "iban": "Formato italiano IT + check digit + 23 caratteri",
+      "email": "Formato standard con domini italiani comuni",
+      "telefono": "Formato mobile italiano 33X/34X/38X + 7 cifre"
+    },
+    "generatori_automatici": {
+      "pod": "IT001E + 8 cifre casuali (es: IT001E87654321)",
+      "pdr": "14 cifre casuali (es: 09876543210987)",
+      "numero_contratto_luce": "EE + ANNO + 4 cifre progressive (es: EE20240156)",
+      "numero_contratto_gas": "GAS + ANNO + 4 cifre progressive (es: GAS20240089)",
+      "uuid": "randomUUID() da crypto (formato standard UUID v4)"
+    },
+    "fornitori_reali": {
+      "maggiori": ["Enel Energia", "Eni Gas e Luce", "Edison Energia", "A2A Energia"],
+      "alternativi": ["Hera Comm", "Acea Energia", "Sorgenia", "Illumia", "Wekiwi"],
+      "note": "Tutti i fornitori elencati sono operatori reali del mercato energetico italiano"
+    },
+    "range_prezzi_realistici": {
+      "energia_elettrica": "0.085 - 0.135 €/kWh (prezzi mercato libero 2024)",
+      "gas_naturale": "0.38 - 0.65 €/Smc (prezzi mercato libero 2024)",
+      "note": "Prezzi indicativi basati su tariffe reali del mercato energetico"
+    }
+  }
+}

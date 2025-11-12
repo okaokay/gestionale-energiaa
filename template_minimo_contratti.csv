@@ -1,0 +1,3 @@
+tipo_record,commodity,pod,fornitore,numero_contratto,data_attivazione,nome,cognome,email_principale,codice_fiscale,pdr
+contratto_luce,luce,IT001E12345678,Enel Energia,LUCE-0001,2024-01-15,Mario,Rossi,m.rossi@example.com,RSSMRA80A01H501Z,
+contratto_gas,gas,,Eni Plenitude,GAS-0001,2024-02-01,Luisa,Bianchi,l.bianchi@example.com,BNCLSU85C41F205X,IT001G87654321

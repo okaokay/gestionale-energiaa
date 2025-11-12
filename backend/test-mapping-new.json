@@ -1,0 +1,9 @@
+﻿{
+    "sessionId":  "session_1761222089414_7fw79bkym",
+    "mappings":  {
+                     "Email":  "email_principale",
+                     "Cognome":  "cognome",
+                     "Nome":  "nome",
+                     "Telefono":  "telefono_principale"
+                 }
+}

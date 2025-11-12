@@ -1,0 +1,63 @@
+services:
+  # Applicazione principale (Backend + Frontend servito staticamente)
+  app:
+    build: .
+    container_name: gestionale_energia_app
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - JWT_SECRET=your-super-secure-jwt-secret-key-change-this-in-production-2024
+      - JWT_EXPIRES_IN=7d
+      - DATABASE_PATH=/app/data/gestionale_energia.db
+      - DATABASE_URL=sqlite:/app/data/gestionale_energia.db
+      - FRONTEND_URL=https://gmgestionale.cloud
+      - BACKEND_URL=https://gmgestionale.cloud
+      - CORS_ORIGIN=https://gmgestionale.cloud
+      - SECURE_COOKIES=true
+      - TRUST_PROXY=true
+      - LOG_LEVEL=info
+      # Email configuration (opzionale - configurare se necessario)
+      - BREVO_API_KEY=${BREVO_API_KEY:-}
+      - FROM_EMAIL=${FROM_EMAIL:-noreply@gmgestionale.cloud}
+      - FROM_NAME=${FROM_NAME:-GM Gestionale}
+      # AI configuration (opzionale - configurare se necessario)
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    volumes:
+      - ./uploads:/app/uploads
+      - ./backend/database:/app/backend/database
+      - ./gestionale_energia.db:/app/data/gestionale_energia.db
+    networks:
+      - gestionale_network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    # Avvio con migrazione automatica basata su DATABASE_PATH
+    command: ["node", "scripts/start-with-migrate.js"]
+
+  # Nginx come reverse proxy e server per i file statici
+  nginx:
+    image: nginx:alpine
+    container_name: gestionale_energia_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./frontend/dist:/usr/share/nginx/html:ro
+      - ./ssl:/etc/nginx/ssl:ro  # Per i certificati SSL (opzionale)
+    depends_on:
+      - app
+    networks:
+      - gestionale_network
+
+networks:
+  gestionale_network:
+    driver: bridge
+
+volumes:
+  uploads_data:
+  database_data:

@@ -1,0 +1,9 @@
+# Ignora tutti i file temporanei uploadati
+temp/*
+!temp/.gitkeep
+
+# Ignora tutti i documenti caricati
+documenti/*
+!documenti/.gitkeep
+!documenti/*/.gitkeep
+

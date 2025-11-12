@@ -1,0 +1,30 @@
+services:
+  gestionale-energia:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: gestionale-energia-dev-test
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - TZ=Europe/Rome
+      - JWT_SECRET=your-super-secret-jwt-key-change-this-hostinger-2024
+      - JWT_EXPIRES_IN=7d
+      - DATABASE_PATH=/app/gestionale_energia.db
+      - FRONTEND_URL=http://localhost:8080
+      - BACKEND_URL=http://localhost:8080
+    ports:
+      - "8080:3001"
+    volumes:
+      - uploads_data:/app/uploads
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  uploads_data:
+    driver: local

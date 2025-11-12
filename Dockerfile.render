@@ -1,0 +1,68 @@
+# Dockerfile ottimizzato per Render.com
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Aggiorna npm alla versione più recente
+RUN npm install -g npm@11.6.2
+
+# Installa SQLite3, Python, build tools e librerie per canvas
+RUN apk add --no-cache \
+    sqlite \
+    python3 \
+    make \
+    g++ \
+    py3-pip \
+    pkgconfig \
+    cairo-dev \
+    pango-dev \
+    libjpeg-turbo-dev \
+    giflib-dev \
+    pixman-dev
+
+# Copia i file package.json per il caching delle dipendenze
+COPY package*.json ./
+COPY frontend/package*.json ./frontend/
+COPY tsconfig.json ./
+
+# Installa TUTTE le dipendenze (incluse devDependencies per il build)
+RUN npm ci
+
+# Copia il codice sorgente
+COPY backend/ ./backend/
+COPY frontend/ ./frontend/
+COPY scripts/ ./scripts/
+
+# Build del frontend
+WORKDIR /app/frontend
+RUN npm ci && npm run build
+
+# Torna alla directory principale e build del backend
+WORKDIR /app
+RUN npm run build
+
+# Rimuovi devDependencies per ridurre la dimensione dell'immagine
+RUN npm prune --production
+
+# Crea le directory necessarie
+RUN mkdir -p uploads/temp uploads/contracts uploads/documenti uploads/clienti uploads/contract_templates
+RUN mkdir -p backend/database
+
+# Inizializza il database con tutte le tabelle
+RUN touch /app/gestionale_energia.db
+RUN node dist/backend/database/migrate-sqlite.js
+
+# Variabili d'ambiente per Render
+ENV NODE_ENV=production
+ENV PORT=3001
+ENV TZ=Europe/Rome
+ENV DATABASE_PATH=/app/gestionale_energia.db
+
+# Espone la porta
+EXPOSE 3001
+
+# Assicuriamoci di essere nella directory corretta
+WORKDIR /app
+
+# Comando di avvio
+CMD ["node", "/app/dist/backend/server.js"]

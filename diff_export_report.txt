@@ -1,0 +1,10 @@
+=== Confronto Export ===
+Snapshot A: generated_at=2025-10-30T19:10:43.199Z, clients=11
+Snapshot B: generated_at=2025-10-30T19:10:43.199Z, clients=11
+
+Clienti confrontati: 11
+Clienti solo in A: 0
+Clienti solo in B: 0
+
+
+Totale clienti con cambiamenti: 0

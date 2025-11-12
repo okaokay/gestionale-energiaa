@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: gestionale-energia
+    env: docker
+    dockerfilePath: ./Dockerfile.render
+    plan: free
+    region: frankfurt
+    branch: main
+    buildCommand: ""
+    startCommand: ""
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: TZ
+        value: Europe/Rome
+      - key: DATABASE_PATH
+        value: /app/gestionale_energia.db
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: FRONTEND_URL
+        fromService:
+          type: web
+          name: gestionale-energia
+          property: host
+      - key: BACKEND_URL
+        fromService:
+          type: web
+          name: gestionale-energia
+          property: host

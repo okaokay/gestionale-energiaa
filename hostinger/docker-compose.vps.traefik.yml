@@ -1,0 +1,94 @@
+version: "3.8"
+
+services:
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - --api.dashboard=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.le.acme.email=${ACME_EMAIL:-admin@gmgestionale.cloud}
+      - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.le.acme.httpchallenge=true
+      - --certificatesresolvers.le.acme.httpchallenge.entrypoint=web
+      - --log.level=INFO
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_letsencrypt:/letsencrypt
+    networks:
+      - gestionale_net
+
+  gestionale-energia:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: gestionale-energia
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - TZ=Europe/Rome
+      - LOG_LEVEL=info
+      - FRONTEND_URL=https://gmgestionale.cloud
+      - BACKEND_URL=https://gmgestionale.cloud
+      - CORS_ORIGIN=https://gmgestionale.cloud
+      - SECURE_COOKIES=true
+      - TRUST_PROXY=true
+      - JWT_SECRET=${JWT_SECRET:-change-me-please-2024}
+      - JWT_EXPIRES_IN=7d
+      - DATABASE_PATH=/app/data/gestionale_energia.db
+      - INIT_DB=true
+      - FORCE_SEED_RESTORE=true
+      - EMAIL_SENDER_NAME=Gestionale Energia
+      - EMAIL_SENDER_ADDRESS=noreply@gmgestionale.cloud
+      - BREVO_SMTP_USER=apikey
+      - BREVO_API_KEY=REPLACE_WITH_BREVO_API_KEY
+      - BREVO_SMTP_PASS=${BREVO_API_KEY}
+    volumes:
+      - uploads_data:/app/uploads
+      - database_data:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    command: ["node", "scripts/start-with-migrate.js"]
+    security_opt:
+      - no-new-privileges:true
+    labels:
+      - "traefik.enable=true"
+      # Router HTTPS principale
+      - "traefik.http.routers.gestionale.rule=Host(`gmgestionale.cloud`,`www.gmgestionale.cloud`)"
+      - "traefik.http.routers.gestionale.entrypoints=websecure"
+      - "traefik.http.routers.gestionale.tls=true"
+      - "traefik.http.routers.gestionale.tls.certresolver=le"
+      - "traefik.http.services.gestionale.loadbalancer.server.port=3001"
+      # Security headers via Traefik (CSP + CORP) per Unlayer
+      - "traefik.http.middlewares.unlayer-headers.headers.contentSecurityPolicy=default-src 'self' https: data: blob:; base-uri 'self'; font-src 'self' https: data:; img-src 'self' https: data: blob:; object-src 'none'; script-src 'self' https://editor.unlayer.com https://*.unlayer.com 'unsafe-inline' 'unsafe-eval'; style-src 'self' https: 'unsafe-inline'; frame-src 'self' https://editor.unlayer.com https://*.unlayer.com; connect-src 'self' https://editor.unlayer.com https://*.unlayer.com wss:; form-action 'self'; frame-ancestors 'self'"
+      - "traefik.http.middlewares.unlayer-headers.headers.customResponseHeaders.Cross-Origin-Resource-Policy=cross-origin"
+      - "traefik.http.middlewares.unlayer-headers.headers.removeResponseHeaders=Content-Security-Policy,Cross-Origin-Resource-Policy,Cross-Origin-Embedder-Policy"
+      - "traefik.http.routers.gestionale.middlewares=unlayer-headers"
+      # Redirect HTTP -> HTTPS
+      - "traefik.http.routers.redirect-web.rule=Host(`gmgestionale.cloud`,`www.gmgestionale.cloud`)"
+      - "traefik.http.routers.redirect-web.entrypoints=web"
+      - "traefik.http.routers.redirect-web.middlewares=redirect-to-https,unlayer-headers"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+    networks:
+      - gestionale_net
+
+volumes:
+  uploads_data:
+  database_data:
+  traefik_letsencrypt:
+
+networks:
+  gestionale_net:
+    driver: bridge

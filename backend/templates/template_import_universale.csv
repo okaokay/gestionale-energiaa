@@ -1,0 +1,40 @@
+# TEMPLATE CSV UNIVERSALE - SISTEMA IMPORT UNIFICATO
+# =====================================================
+# Questo template supporta l'import di tutti i tipi di record del sistema
+# Basato su analisi completa schema database (16 tabelle principali)
+# 
+# TIPI DI RECORD SUPPORTATI:
+# - cliente_privato: Cliente privato
+# - cliente_azienda: Cliente aziendale  
+# - contratto_luce: Contratto energia elettrica
+# - contratto_gas: Contratto gas
+# - compenso: Compenso/commissione agente
+# - offerta: Offerta commerciale
+# - task: Task/reminder
+# - documento: Documento allegato
+# - ai_match: Match AI per lead generation
+# - email_template: Template email
+# - email_campaign: Campagna email
+# - consenso_gdpr: Consenso GDPR specifico
+#
+# ISTRUZIONI:
+# 1. Rimuovere questa sezione di commenti prima dell'import
+# 2. Compilare solo i campi necessari per il tipo di record
+# 3. Il campo 'tipo_record' è OBBLIGATORIO per l'auto-detection
+# 4. Lasciare vuoti i campi non applicabili
+# 5. Per date usare formato: YYYY-MM-DD o DD/MM/YYYY
+# 6. Per timestamp: YYYY-MM-DD HH:MM:SS
+# 7. Per boolean: true/false, 1/0, si/no
+# 8. Per JSON: formato JSON valido tra virgolette
+#
+# MODALITÀ IMPORT:
+# - update: Aggiorna record esistente se trovato
+# - skip: Salta se record già esistente  
+# - error: Errore se record già esistente
+#
+# LINKING AUTOMATICO:
+# - I record vengono collegati automaticamente tramite email, codice fiscale, P.IVA
+# - Contratti vengono associati ai clienti tramite POD/PDR o dati anagrafici
+# - Compensi vengono associati ad agenti e clienti tramite email
+#
+tipo_record,modalita_import,id_esterno,assigned_agent_email,assigned_user_email,nome,cognome,codice_fiscale,data_nascita,email_principale,email_secondaria,telefono_mobile,telefono_fisso,via_residenza,civico_residenza,cap_residenza,citta_residenza,provincia_residenza,via_fornitura,civico_fornitura,cap_fornitura,citta_fornitura,provincia_fornitura,tipo_documento,numero_documento,ente_rilascio,data_scadenza_documento,iban,preferenza_email,preferenza_sms,preferenza_telefono,note_cliente,consenso_privacy,consenso_marketing,consenso_profilazione,consenso_terze_parti,data_consenso,modalita_acquisizione_consenso,ip_address,commissione_luce,commissione_gas,ragione_sociale,partita_iva,codice_ateco,descrizione_ateco,pec_aziendale,via_sede_legale,civico_sede_legale,cap_sede_legale,citta_sede_legale,provincia_sede_legale,via_sede_operativa,civico_sede_operativa,cap_sede_operativa,citta_sede_operativa,provincia_sede_operativa,nome_referente,cognome_referente,ruolo_referente,email_referente,telefono_referente,dimensione_azienda,settore_attivita,fatturato_annuo,numero_dipendenti,iban_azienda,note_azienda,numero_contratto,pod,pdr,fornitore,data_attivazione,data_scadenza,tipologia_mercato,potenza_impegnata,consumo_annuo_stimato,consumo_annuo_reale,fascia_oraria,prezzo_energia,prezzo_gas,costo_fisso_mensile,tipo_tariffa,bonus_sociale,note_contratto,stato_contratto,alert_scadenza,classe_contatore,tipo_uso,tipo_offerta,procedura_contratto,importo_compenso,tipo_compenso,descrizione_compenso,stato_compenso,data_maturazione,data_pagamento,nome_offerta,tipo_energia,data_inizio_validita,data_fine_validita,prezzo_luce_offerta,prezzo_gas_offerta,costo_fisso_luce,costo_fisso_gas,durata_vincolo_mesi,target_clienti,consumo_minimo_kwh,consumo_massimo_kwh,codici_ateco_ammessi,codici_ateco_esclusi,zone_geografiche,bonus_attivazione,incentivi_descrizione,penale_recesso,condizioni_particolari,pdf_filename,pdf_path,stato_offerta,analizzato_da_ai,dati_ai_estratti,confidence_score,score_matching,categoria_lead,risparmio_stimato_annuo,percentuale_risparmio,giorni_a_scadenza,dettagli_matching,stato_contatto,data_primo_contatto,data_ultimo_contatto,note_venditore,data_prossimo_followup,titolo_task,descrizione_task,tipo_task,priorita_task,data_scadenza_task,completato,note_completamento,nome_file,percorso_file,tipo_documento_allegato,mime_type,dimensione_bytes,categoria_documento,testo_estratto,indicizzato,firmato_digitalmente,data_firma,firmatario,nome_template,tipologia_template,target_clienti_template,oggetto_email,corpo_html,corpo_text,variabili_disponibili,attivo_template,nome_campagna,tipologia_campagna,filtri_targeting,data_schedulata,data_invio_effettivo,stato_campagna,totale_destinatari,invii_riusciti,invii_falliti,aperture_totali,click_totali,conversioni,variante_test,oggetto_variante_b,tipo_consenso_gdpr,consenso_dato,testo_informativa,revocato,data_revoca,created_by_email,created_at,updated_at

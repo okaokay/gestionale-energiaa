@@ -1,0 +1,115 @@
+# Docker Compose definitivo per hosting via URL (Hostinger)
+# - Clona il container esistente (immagine pubblica) e migra/inizializza DB
+# - Include env, volumi, porte, dipendenze, logging e sicurezza
+
+services:
+  gestionale-energia:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: gestionale-energia
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - TZ=Europe/Rome
+      - LOG_LEVEL=info
+      - FORCE_SEED_RESTORE=true
+      - FRONTEND_URL=https://gmgestionale.cloud
+      - BACKEND_URL=https://gmgestionale.cloud
+      - CORS_ORIGIN=https://gmgestionale.cloud
+      - SECURE_COOKIES=true
+      - TRUST_PROXY=true
+      - JWT_SECRET=${JWT_SECRET:-change-me-please-2024}
+      - JWT_EXPIRES_IN=7d
+      - DATABASE_PATH=/app/data/gestionale_energia.db
+      - INIT_DB=true
+      # Brevo/Email configuration (replace placeholders before deploy)
+      - EMAIL_SENDER_NAME=Gestionale Energia
+      - EMAIL_SENDER_ADDRESS=noreply@gmgestionale.cloud
+      - BREVO_SMTP_USER=apikey
+      # Usa la stessa API Key come password SMTP (pattern Brevo)
+      - BREVO_API_KEY=REPLACE_WITH_BREVO_API_KEY
+      - BREVO_SMTP_PASS=${BREVO_API_KEY}
+    volumes:
+      - uploads_data:/app/uploads
+      - database_data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    command: ["node", "scripts/start-with-migrate.js"]
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - gestionale_net
+    labels:
+      - "traefik.enable=true"
+      # Router HTTPS
+      - "traefik.http.routers.gestionale.rule=Host(`gmgestionale.cloud`,`www.gmgestionale.cloud`)"
+      - "traefik.http.routers.gestionale.entrypoints=websecure"
+      - "traefik.http.routers.gestionale.tls=true"
+      - "traefik.http.routers.gestionale.tls.certresolver=letsencrypt"
+      - "traefik.http.services.gestionale.loadbalancer.server.port=3001"
+      # Security headers via Traefik (CSP + CORP) per Unlayer
+      - "traefik.http.middlewares.unlayer-headers.headers.contentSecurityPolicy=default-src 'self' https: data: blob:; base-uri 'self'; font-src 'self' https: data:; img-src 'self' https: data: blob:; object-src 'none'; script-src 'self' blob: https://editor.unlayer.com https://*.unlayer.com 'unsafe-inline' 'unsafe-eval'; style-src 'self' https: 'unsafe-inline'; frame-src 'self' https://editor.unlayer.com https://*.unlayer.com; connect-src 'self' https://editor.unlayer.com https://*.unlayer.com wss:; form-action 'self'; frame-ancestors 'self'"
+      - "traefik.http.middlewares.unlayer-headers.headers.customResponseHeaders.Cross-Origin-Resource-Policy=cross-origin"
+      - "traefik.http.middlewares.unlayer-headers.headers.removeResponseHeaders=Content-Security-Policy,Cross-Origin-Resource-Policy,Cross-Origin-Embedder-Policy"
+      - "traefik.http.routers.gestionale.middlewares=unlayer-headers"
+      # Router HTTP con redirect → HTTPS
+      - "traefik.http.routers.gestionale-http.rule=Host(`gmgestionale.cloud`,`www.gmgestionale.cloud`)"
+      - "traefik.http.routers.gestionale-http.entrypoints=web"
+      - "traefik.http.routers.gestionale-http.middlewares=redirect-https,unlayer-headers"
+      - "traefik.http.middlewares.redirect-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.redirect-https.redirectscheme.permanent=true"
+      - "traefik.docker.network=gestionale_net"
+
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge=true
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
+      - --certificatesresolvers.letsencrypt.acme.email=info.gianlucamancini@gmail.com
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_letsencrypt:/letsencrypt
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - gestionale_net
+
+  
+
+networks:
+  gestionale_net:
+    driver: bridge
+
+volumes:
+  uploads_data:
+    driver: local
+  database_data:
+    driver: local
+  traefik_letsencrypt:
+    driver: local

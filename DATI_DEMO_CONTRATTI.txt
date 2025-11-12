@@ -1,0 +1,148 @@
+═══════════════════════════════════════════════════════════════════════
+🎯 DATI DEMO PER TEST COMPILAZIONE CONTRATTI
+═══════════════════════════════════════════════════════════════════════
+
+📋 SCENARIO 1: CLIENTE DOMESTICO (Privato)
+─────────────────────────────────────────────────────────────────────
+
+DATI ANAGRAFICI:
+Nome: Mario
+Cognome: Rossi
+Codice Fiscale: RSSMRA85M01H501U
+Data Nascita: 1985-08-01
+Luogo Nascita: Roma
+
+CONTATTI:
+Email: mario.rossi@example.com
+Telefono: +39 333 1234567
+Telefono Fisso: 06 12345678
+
+INDIRIZZO FORNITURA:
+Via: Via Giuseppe Garibaldi
+Civico: 42
+CAP: 00185
+Comune: Roma
+Provincia: RM
+
+CONTRATTO LUCE:
+POD: IT001E12345678
+Fornitore: ENEL Energia
+Potenza: 3.0
+Consumo Annuo: 2800
+Prezzo: 0.12
+Offerta: ALPERIA Gas Smile Pure
+Data Attivazione: 2024-11-01
+
+CONTRATTO GAS:
+PDR: 14567890123456
+Fornitore: ENEL Energia
+Consumo Annuo: 1200
+Prezzo: 0.85
+Classe Consumo: T2
+Data Attivazione: 2024-11-01
+
+═══════════════════════════════════════════════════════════════════════
+
+📋 SCENARIO 2: CLIENTE BUSINESS (Azienda)
+─────────────────────────────────────────────────────────────────────
+
+DATI AZIENDALI:
+Ragione Sociale: TECH SOLUTIONS SRL
+Partita IVA: 12345678901
+Codice ATECO: 62.01.00
+Referente: Laura Bianchi
+
+CONTATTI:
+Email: info@techsolutions.it
+PEC: techsolutions@pec.it
+Telefono: +39 02 98765432
+
+SEDE LEGALE:
+Via: Corso Buenos Aires
+Civico: 15
+CAP: 20124
+Comune: Milano
+Provincia: MI
+
+CONTRATTO LUCE BUSINESS:
+POD: IT001E98765432
+Fornitore: ALPERIA
+Potenza: 15.0
+Consumo Annuo: 18000
+Prezzo: 0.09
+Offerta: ALPERIA Business Pro
+Data Attivazione: 2024-11-15
+
+CONTRATTO GAS BUSINESS:
+PDR: 14987654321098
+Fornitore: ALPERIA
+Consumo Annuo: 8500
+Prezzo: 0.78
+Classe Consumo: T3
+Data Attivazione: 2024-11-15
+
+═══════════════════════════════════════════════════════════════════════
+
+📋 SCENARIO 3: CLIENTE DOMESTICO 2 (Variante)
+─────────────────────────────────────────────────────────────────────
+
+DATI ANAGRAFICI:
+Nome: Giulia
+Cognome: Verdi
+Codice Fiscale: VRDGLI90D50F205Z
+Data Nascita: 1990-04-10
+Luogo Nascita: Napoli
+
+CONTATTI:
+Email: giulia.verdi@gmail.com
+Telefono: +39 340 9876543
+
+INDIRIZZO FORNITURA:
+Via: Via Toledo
+Civico: 28
+CAP: 80134
+Comune: Napoli
+Provincia: NA
+
+CONTRATTO LUCE:
+POD: IT001E55544433
+Fornitore: ALPERIA
+Potenza: 4.5
+Consumo Annuo: 3500
+Prezzo: 0.115
+Offerta: ALPERIA Smile Pure
+Data Attivazione: 2024-12-01
+
+CONTRATTO GAS:
+PDR: 14111222333444
+Fornitore: ALPERIA
+Consumo Annuo: 950
+Prezzo: 0.88
+Data Attivazione: 2024-12-01
+
+═══════════════════════════════════════════════════════════════════════
+
+🎯 COME TESTARE:
+
+1. Vai su "Contratti" → Click "Compila Contratto"
+2. Scegli "Compilazione Manuale"
+3. Step 1: Seleziona tipo cliente (Domestico o Business)
+4. Step 2: Seleziona modello ALPERIA
+5. Step 3: Click tab "✏️ Inserimento Manuale"
+6. Click "➡️ Procedi con Inserimento Manuale"
+7. Step 4: Copia-incolla i dati demo sopra nei campi corrispondenti
+8. Click "Salva Contratto"
+
+✅ RISULTATO ATTESO:
+- Cliente creato automaticamente in `customers_private` o `customers_business`
+- Contratto luce creato in `contratti_luce` con POD
+- Contratto gas creato in `contratti_gas` con PDR
+- Contratto compilato salvato in `contracts`
+- Cliente visibile nella pagina "Clienti" con tutti i dati
+- Nella pagina dettaglio cliente: contratti luce/gas visibili
+
+═══════════════════════════════════════════════════════════════════════
+
+
+
+

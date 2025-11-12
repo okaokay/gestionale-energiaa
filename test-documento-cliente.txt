@@ -1,0 +1,65 @@
+CONTRATTO FORNITURA ENERGIA ELETTRICA
+
+============================================
+DATI ANAGRAFICI CLIENTE
+============================================
+
+Nome: Mario
+Cognome: Rossi
+Codice Fiscale: RSSMRA85M01H501Z
+Data di Nascita: 01/01/1985
+Luogo di Nascita: Roma (RM)
+
+Email: mario.rossi@email.it
+Telefono Mobile: +39 333 1234567
+PEC: mario.rossi@pec.it
+
+Documento: Carta Identità
+Numero: AB1234567
+Rilasciato da: Comune di Roma
+Scadenza: 15/12/2028
+
+============================================
+INDIRIZZO RESIDENZA
+============================================
+
+Via: Via Giuseppe Garibaldi
+Civico: 42
+CAP: 00100
+Città: Roma
+Provincia: RM
+Nazione: Italia
+
+============================================
+DATI CONTRATTO ENERGIA
+============================================
+
+Fornitore: Alperia Energia
+Tipo Contratto: Fornitura Luce
+Offerta: Alperia Luce Green 2024
+
+POD: IT001E12345678
+Potenza Impegnata: 3 kW
+Prezzo Energia: €0,15/kWh
+
+Data Stipula: 15/01/2024
+Data Attivazione: 01/02/2024
+Durata Contratto: 24 mesi
+Scadenza: 31/01/2026
+
+Modalità Pagamento: Addebito SDD
+IBAN: IT60X0542811101000000123456
+
+============================================
+CODICE CLIENTE: CL-2024-001234
+Codice Proposta: PROP-AL-2024-5678
+Mandante: Energy Solutions SRL
+Agente: Giovanni Bianchi
+============================================
+
+Note: Cliente interessato anche a fornitura gas.
+Richiedere preventivo entro 30 giorni.
+
+
+
+

@@ -1,0 +1,11 @@
+tipo_record,nome,cognome,codice_fiscale,data_nascita,email_principale,telefono_mobile,via_residenza,civico_residenza,cap_residenza,citta_residenza,provincia_residenza,tipo_documento,numero_documento,ente_rilascio,data_scadenza_documento,iban,consenso_privacy,consenso_marketing,numero_contratto,pod,pdr,fornitore,data_attivazione,data_scadenza,prezzo_energia,prezzo_gas,stato_contratto
+cliente_privato,Giuseppe,Rossi,RSSGPP75H15F205K,1975-06-15,giuseppe.rossi@gmail.com,3389876543,Via Roma,25,00185,Roma,RM,Carta d'identità,AR1234567,Comune di Roma,2029-06-15,IT60X0542811101000000789012,1,0,,,,,,,,,,
+contratto_luce,Giuseppe,Rossi,RSSGPP75H15F205K,,giuseppe.rossi@gmail.com,,,,,,,,,,,,,EE20240156,IT001E87654321,,Edison Energia,2024-03-15,2026-03-15,0.1085,,attivo
+contratto_gas,Giuseppe,Rossi,RSSGPP75H15F205K,,giuseppe.rossi@gmail.com,,,,,,,,,,,,,GAS20240089,,09876543210987,A2A Energia,2024-03-15,2026-03-15,,0.4275,attivo
+cliente_privato,Laura,Verdi,VRDLRA90A01H501Z,1990-01-01,laura.verdi@outlook.it,3471234567,Via Nazionale,78,50123,Firenze,FI,Patente di guida,FI9876543,Motorizzazione Civile di Firenze,2034-01-01,IT30X0542811101000000456789,1,1,,,,,,,,,,
+contratto_luce,Laura,Verdi,VRDLRA90A01H501Z,,laura.verdi@outlook.it,,,,,,,,,,,,,EE20240287,IT001E98765432,,Illumia,2024-06-01,2026-06-01,0.1125,,attivo
+contratto_gas,Laura,Verdi,VRDLRA90A01H501Z,,laura.verdi@outlook.it,,,,,,,,,,,,,GAS20240134,,98765432109876,Wekiwi,2024-06-01,2026-06-01,,0.4650,attivo
+cliente_privato,Marco,Bianchi,BNCMRC85M15H501X,1985-08-15,marco.bianchi@libero.it,3351234567,Via Milano,42,20100,Milano,MI,Carta d'identità,MI7654321,Comune di Milano,2030-08-15,IT90X0542811101000000123456,1,0,,,,,,,,,,
+contratto_luce,Marco,Bianchi,BNCMRC85M15H501X,,marco.bianchi@libero.it,,,,,,,,,,,,,EE20240345,IT001E12345678,,Enel Energia,2024-04-10,2026-04-10,0.0950,,attivo
+cliente_privato,Anna,Neri,NRIMAR80B15F205Y,1980-02-15,anna.neri@yahoo.it,3381234567,Via Torino,15,10100,Torino,TO,Passaporto,YA1234567,Questura di Torino,2028-02-15,IT70X0542811101000000987654,1,1,,,,,,,,,,
+contratto_gas,Anna,Neri,NRIMAR80B15F205Y,,anna.neri@yahoo.it,,,,,,,,,,,,,GAS20240201,,11223344556677,Eni Gas e Luce,2024-05-01,2026-05-01,,0.4125,attivo
