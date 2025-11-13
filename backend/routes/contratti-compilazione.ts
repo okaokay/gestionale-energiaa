@@ -483,7 +483,7 @@ router.put('/:id/stato', async (req: Request, res: Response) => {
         // AUTOMAZIONE PAGAMENTO COMMISSIONE
         // ═══════════════════════════════════════════════════════════════════════════
         
-        const statiPagamento = ['Da attivare', 'Chiusa', 'chiusa', 'chiuso', 'Attivo']; // Stati che triggerano il pagamento
+        const statiPagamento = ['Attivo', 'attivo', 'attiva', 'ATTIVA'];
         
         console.log('🔍 Verifica condizioni automazione commissione (da contratti-compilazione):');
         console.log('   - Stato precedente:', statoPrec);
@@ -491,7 +491,10 @@ router.put('/:id/stato', async (req: Request, res: Response) => {
         console.log('   - Stati che triggerano pagamento:', statiPagamento);
         console.log('   - Stato è valido?', statiPagamento.includes(stato));
         
-        if (statiPagamento.includes(stato)) {
+        const activeStates = ['Attivo', 'attivo', 'attiva', 'ATTIVA'];
+        const wasActive = activeStates.includes(statoPrec);
+        const isActive = activeStates.includes(stato);
+        if (!wasActive && isActive) {
             // Recupera dati cliente per verificare agente e commissione
             const clienteResult = await pool.query(`
                 SELECT assigned_agent_id, commissione_pattuita, commissione_pagata 

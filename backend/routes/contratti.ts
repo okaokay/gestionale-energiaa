@@ -279,6 +279,7 @@ router.put('/luce/:id', authorize('operatore', 'admin', 'super_admin'), validate
     try {
         const updates: string[] = [];
         const values: any[] = [];
+        let prevStato: any = null;
         
         const updatableFields = [
             'fornitore', 'data_fine', 'potenza_impegnata', 'consumo_annuo_reale',
@@ -300,6 +301,11 @@ router.put('/luce/:id', authorize('operatore', 'admin', 'super_admin'), validate
         
         values.push(req.params.id);
         
+        if (req.body.stato !== undefined) {
+            const prev = await pool.query(`SELECT stato FROM contratti_luce WHERE id = ?`, [req.params.id]);
+            prevStato = (prev.rows[0] as any)?.stato || null;
+        }
+
         const result = await pool.query(`
             UPDATE contratti_luce 
             SET ${updates.join(', ')}
@@ -339,7 +345,7 @@ router.put('/luce/:id', authorize('operatore', 'admin', 'super_admin'), validate
                 // AUTOMAZIONE PAGAMENTO COMMISSIONE
                 // ═══════════════════════════════════════════════════════════════════════════
                 
-                const statiPagamento = ['Da attivare', 'Chiusa', 'chiusa', 'Attivo']; // Stati che triggerano il pagamento
+                const statiPagamento = ['Attivo', 'attivo', 'attiva', 'ATTIVA'];
                 
                 console.log('🔍 Verifica condizioni automazione commissione (da contratto LUCE):');
                 console.log('   - Stato nuovo:', req.body.stato);
@@ -349,7 +355,10 @@ router.put('/luce/:id', authorize('operatore', 'admin', 'super_admin'), validate
                 console.log('   - Commissione LUCE:', cliente?.commissione_luce);
                 console.log('   - Agente assegnato:', cliente?.assigned_agent_id);
                 
-                if (cliente && statiPagamento.includes(req.body.stato) && 
+                const activeStates = ['Attivo', 'attivo', 'attiva', 'ATTIVA'];
+                const wasActive = activeStates.includes(prevStato);
+                const isActive = activeStates.includes(req.body.stato);
+                if (!wasActive && isActive && cliente && 
                     cliente.commissione_luce && 
                     cliente.assigned_agent_id) {
                     
@@ -421,6 +430,7 @@ router.put('/gas/:id', authorize('operatore', 'admin', 'super_admin'), validateF
     try {
         const updates: string[] = [];
         const values: any[] = [];
+        let prevStato: any = null;
         
         const updatableFields = [
             'fornitore', 'data_fine', 'consumo_annuo_gas', 'classe_contatore',
@@ -442,6 +452,11 @@ router.put('/gas/:id', authorize('operatore', 'admin', 'super_admin'), validateF
         
         values.push(req.params.id);
         
+        if (req.body.stato !== undefined) {
+            const prev = await pool.query(`SELECT stato FROM contratti_gas WHERE id = ?`, [req.params.id]);
+            prevStato = (prev.rows[0] as any)?.stato || null;
+        }
+
         await pool.query(`
             UPDATE contratti_gas 
             SET ${updates.join(', ')}
@@ -481,7 +496,7 @@ router.put('/gas/:id', authorize('operatore', 'admin', 'super_admin'), validateF
                 // AUTOMAZIONE PAGAMENTO COMMISSIONE
                 // ═══════════════════════════════════════════════════════════════════════════
                 
-                const statiPagamento = ['Da attivare', 'Chiusa', 'chiusa', 'Attivo']; // Stati che triggerano il pagamento
+                const statiPagamento = ['Attivo', 'attivo', 'attiva', 'ATTIVA'];
                 
                 console.log('🔍 Verifica condizioni automazione commissione (da contratto GAS):');
                 console.log('   - Stato nuovo:', req.body.stato);
@@ -491,7 +506,10 @@ router.put('/gas/:id', authorize('operatore', 'admin', 'super_admin'), validateF
                 console.log('   - Commissione GAS:', cliente?.commissione_gas);
                 console.log('   - Agente assegnato:', cliente?.assigned_agent_id);
                 
-                if (cliente && statiPagamento.includes(req.body.stato) && 
+                const activeStates = ['Attivo', 'attivo', 'attiva', 'ATTIVA'];
+                const wasActive = activeStates.includes(prevStato);
+                const isActive = activeStates.includes(req.body.stato);
+                if (!wasActive && isActive && cliente && 
                     cliente.commissione_gas && 
                     cliente.assigned_agent_id) {
                     

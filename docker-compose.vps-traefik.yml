@@ -67,6 +67,9 @@ services:
       - "traefik.http.routers.gmgestionale.tls=true"
       - "traefik.http.routers.gmgestionale.tls.certresolver=le"
       - "traefik.http.services.gmgestionale.loadbalancer.server.port=3001"
+      - "traefik.http.middlewares.unlayer-headers.headers.contentSecurityPolicy=default-src 'self' https: data: blob:; base-uri 'self'; font-src 'self' https: data:; img-src 'self' https: data: blob:; object-src 'none'; script-src 'self' blob: https://editor.unlayer.com https://*.unlayer.com 'unsafe-inline' 'unsafe-eval'; style-src 'self' https: 'unsafe-inline'; frame-src 'self' https://editor.unlayer.com https://*.unlayer.com; connect-src 'self' https://editor.unlayer.com https://*.unlayer.com wss:; form-action 'self'; frame-ancestors 'self'"
+      - "traefik.http.middlewares.unlayer-headers.headers.customResponseHeaders.Cross-Origin-Resource-Policy=cross-origin"
+      - "traefik.http.routers.gmgestionale.middlewares=unlayer-headers"
 
 
 networks:

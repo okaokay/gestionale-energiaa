@@ -798,50 +798,6 @@ router.put('/assign-cliente', canReassignCliente, async (req: Request, res: Resp
             
             console.log('🔍 Verifica contratti esistenti:', { hasContrattiLuce, hasContrattiGas });
             
-            // Inserisci commissioni nella tabella compensi solo se il cliente ha contratti per quella fornitura
-            if (commissione_luce && commissione_luce > 0 && hasContrattiLuce) {
-                await pool.query(`
-                    INSERT INTO compensi (
-                        id, agente_id, cliente_id, cliente_tipo, contratto_id, contratto_tipo,
-                        importo, tipo, descrizione, stato, data_maturazione, created_at, updated_at
-                    ) VALUES (?, ?, ?, ?, NULL, 'luce', ?, 'commissione_contratto', ?, 'maturato', ?, ?, ?)
-                `, [
-                    crypto.randomUUID(),
-                    new_agent_id,
-                    cliente_id,
-                    cliente_tipo,
-                    commissione_luce,
-                    `Commissione LUCE per assegnazione cliente - €${commissione_luce}`,
-                    new Date().toISOString(),
-                    new Date().toISOString(),
-                    new Date().toISOString()
-                ]);
-                console.log('✅ Commissione LUCE inserita nella tabella compensi:', commissione_luce);
-            } else if (commissione_luce && commissione_luce > 0 && !hasContrattiLuce) {
-                console.log('⚠️ Commissione LUCE non inserita: cliente non ha contratti luce attivi');
-            }
-            
-            if (commissione_gas && commissione_gas > 0 && hasContrattiGas) {
-                await pool.query(`
-                    INSERT INTO compensi (
-                        id, agente_id, cliente_id, cliente_tipo, contratto_id, contratto_tipo,
-                        importo, tipo, descrizione, stato, data_maturazione, created_at, updated_at
-                    ) VALUES (?, ?, ?, ?, NULL, 'gas', ?, 'commissione_contratto', ?, 'maturato', ?, ?, ?)
-                `, [
-                    crypto.randomUUID(),
-                    new_agent_id,
-                    cliente_id,
-                    cliente_tipo,
-                    commissione_gas,
-                    `Commissione GAS per assegnazione cliente - €${commissione_gas}`,
-                    new Date().toISOString(),
-                    new Date().toISOString(),
-                    new Date().toISOString()
-                ]);
-                console.log('✅ Commissione GAS inserita nella tabella compensi:', commissione_gas);
-            } else if (commissione_gas && commissione_gas > 0 && !hasContrattiGas) {
-                console.log('⚠️ Commissione GAS non inserita: cliente non ha contratti gas attivi');
-            }
         } else {
             // Usa commissione singola (modalità legacy)
             await pool.query(
@@ -857,26 +813,6 @@ router.put('/assign-cliente', canReassignCliente, async (req: Request, res: Resp
             
             console.log('✅ Commissione singola aggiornata:', { commissione_pattuita });
             
-            // Inserisci commissione nella tabella compensi se specificata
-            if (commissione_pattuita && commissione_pattuita > 0) {
-                await pool.query(`
-                    INSERT INTO compensi (
-                        id, agente_id, cliente_id, cliente_tipo, contratto_id, contratto_tipo,
-                        importo, tipo, descrizione, stato, data_maturazione, created_at, updated_at
-                    ) VALUES (?, ?, ?, ?, NULL, 'generale', ?, 'commissione_contratto', ?, 'maturato', ?, ?, ?)
-                `, [
-                    crypto.randomUUID(),
-                    new_agent_id,
-                    cliente_id,
-                    cliente_tipo,
-                    commissione_pattuita,
-                    `Commissione per assegnazione cliente - €${commissione_pattuita}`,
-                    new Date().toISOString(),
-                    new Date().toISOString(),
-                    new Date().toISOString()
-                ]);
-                console.log('✅ Commissione inserita nella tabella compensi:', commissione_pattuita);
-            }
         }
         
         // Log operazione

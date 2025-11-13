@@ -50,6 +50,7 @@ router.get('/', validatePagination, async (req: Request, res: Response, next: Ne
         const search = req.query.search as string || '';
         const tipo = req.query.tipo as string || ''; // 'privati' o 'aziende'
         const contratti = (req.query.contratti as string) || ''; // 'luce' | 'gas' | 'both'
+        const assignedAgentIdParam = (req.query.assigned_agent_id as string) || '';
         
         // 🔐 FILTRO PER RUOLO UTENTE
         const user = req.user as any;
@@ -68,6 +69,18 @@ router.get('/', validatePagination, async (req: Request, res: Response, next: Ne
             roleParams = [user.id, user.id];
         }
         // Super admin: nessun filtro (vede tutto)
+        
+        // Filtro esplicito per agente assegnato (dropdown UI)
+        let selectedAgentId: string | null = null;
+        if (assignedAgentIdParam) {
+            selectedAgentId = String(assignedAgentIdParam);
+        }
+        // Per operatore/agent, forziamo sempre il proprio ID
+        if (user.role === 'operatore' || user.role === 'agent') {
+            selectedAgentId = String(user.id);
+        }
+        const agentFilterPrivati = selectedAgentId ? ' AND cp.assigned_agent_id = ?' : '';
+        const agentFilterAziende = selectedAgentId ? ' AND ca.assigned_agent_id = ?' : '';
         
         // Alcune installazioni potrebbero non avere tabelle di newsletter
         // Verifichiamo la loro presenza per evitare errori "no such table"
@@ -155,12 +168,19 @@ router.get('/', validatePagination, async (req: Request, res: Response, next: Ne
                 ${searchFilter}
                 ${contrattiFilterPrivati}
                 ${roleFilter}
+                ${agentFilterPrivati}
                 ORDER BY cp.created_at DESC
                 LIMIT ? OFFSET ?
             `;
-            const privatiParams = search 
-                ? [`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, ...roleParams, limit, offset] 
-                : [...roleParams, limit, offset];
+            const privatiParams: any[] = [];
+            if (search) {
+                privatiParams.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+            }
+            privatiParams.push(...roleParams);
+            if (selectedAgentId) {
+                privatiParams.push(selectedAgentId);
+            }
+            privatiParams.push(limit, offset);
             const privatiResult = await pool.query(privatiQuery, privatiParams);
             privati = privatiResult.rows;
         }
@@ -197,7 +217,7 @@ router.get('/', validatePagination, async (req: Request, res: Response, next: Ne
                     ca.ragione_sociale, 
                     ca.partita_iva, 
                     ca.codice_cliente,
-                    ca.email_referente as email, 
+                    ca.email_referente as email,
                     ca.telefono_referente as telefono,
                     ca.citta_sede_legale as citta, 
                     ca.provincia_sede_legale as provincia,
@@ -220,12 +240,19 @@ router.get('/', validatePagination, async (req: Request, res: Response, next: Ne
                 ${searchFilterAziende}
                 ${contrattiFilterAziende}
                 ${roleFilterAziende}
+                ${agentFilterAziende}
                 ORDER BY ca.created_at DESC
                 LIMIT ? OFFSET ?
             `;
-            const aziendeParams = search 
-                ? [`%${search}%`, `%${search}%`, `%${search}%`, ...roleParams, limit, offset] 
-                : [...roleParams, limit, offset];
+            const aziendeParams: any[] = [];
+            if (search) {
+                aziendeParams.push(`%${search}%`, `%${search}%`, `%${search}%`);
+            }
+            aziendeParams.push(...roleParams);
+            if (selectedAgentId) {
+                aziendeParams.push(selectedAgentId);
+            }
+            aziendeParams.push(limit, offset);
             const aziendeResult = await pool.query(aziendeQuery, aziendeParams);
             aziende = aziendeResult.rows;
         }
@@ -247,8 +274,15 @@ router.get('/', validatePagination, async (req: Request, res: Response, next: Ne
             } else if (contratti === 'both') {
                 contrattiFilterPrivati = ` AND EXISTS (SELECT 1 FROM contratti_luce cl WHERE cl.cliente_privato_id = cp.id) AND EXISTS (SELECT 1 FROM contratti_gas cg WHERE cg.cliente_privato_id = cp.id)`;
             }
-            const countQuery = `SELECT COUNT(*) as count FROM clienti_privati cp ${searchFilter} ${contrattiFilterPrivati} ${roleFilter}`;
-            const countParams = search ? [`%${search}%`, `%${search}%`, ...roleParams] : roleParams;
+            const countQuery = `SELECT COUNT(*) as count FROM clienti_privati cp ${searchFilter} ${contrattiFilterPrivati} ${roleFilter} ${agentFilterPrivati}`;
+            const countParams: any[] = [];
+            if (search) {
+                countParams.push(`%${search}%`, `%${search}%`);
+            }
+            countParams.push(...roleParams);
+            if (selectedAgentId) {
+                countParams.push(selectedAgentId);
+            }
             const countResult = await pool.query(countQuery, countParams);
             totalCount = parseInt((countResult.rows[0] as any).count);
         } else if (tipo === 'aziende') {
@@ -262,8 +296,15 @@ router.get('/', validatePagination, async (req: Request, res: Response, next: Ne
             } else if (contratti === 'both') {
                 contrattiFilterAziende = ` AND EXISTS (SELECT 1 FROM contratti_luce cl WHERE cl.cliente_azienda_id = ca.id) AND EXISTS (SELECT 1 FROM contratti_gas cg WHERE cg.cliente_azienda_id = ca.id)`;
             }
-            const countQuery = `SELECT COUNT(*) as count FROM clienti_aziende ca ${searchFilter} ${contrattiFilterAziende} ${roleFilterAziende}`;
-            const countParams = search ? [`%${search}%`, ...roleParams] : roleParams;
+            const countQuery = `SELECT COUNT(*) as count FROM clienti_aziende ca ${searchFilter} ${contrattiFilterAziende} ${roleFilterAziende} ${agentFilterAziende}`;
+            const countParams: any[] = [];
+            if (search) {
+                countParams.push(`%${search}%`);
+            }
+            countParams.push(...roleParams);
+            if (selectedAgentId) {
+                countParams.push(selectedAgentId);
+            }
             const countResult = await pool.query(countQuery, countParams);
             totalCount = parseInt((countResult.rows[0] as any).count);
         } else {
@@ -279,12 +320,22 @@ router.get('/', validatePagination, async (req: Request, res: Response, next: Ne
                 contrattiFilterPrivati = ` AND EXISTS (SELECT 1 FROM contratti_luce cl WHERE cl.cliente_privato_id = cp.id) AND EXISTS (SELECT 1 FROM contratti_gas cg WHERE cg.cliente_privato_id = cp.id)`;
                 contrattiFilterAziende = ` AND EXISTS (SELECT 1 FROM contratti_luce cl WHERE cl.cliente_azienda_id = ca.id) AND EXISTS (SELECT 1 FROM contratti_gas cg WHERE cg.cliente_azienda_id = ca.id)`;
             }
-            const countPrivatiQuery = `SELECT COUNT(*) as count FROM clienti_privati cp WHERE 1=1 ${contrattiFilterPrivati} ${roleFilter}`;
-            const countPrivati = await pool.query(countPrivatiQuery, roleParams);
+            const countPrivatiQuery = `SELECT COUNT(*) as count FROM clienti_privati cp WHERE 1=1 ${contrattiFilterPrivati} ${roleFilter} ${agentFilterPrivati}`;
+            const countPrivatiParams: any[] = [];
+            countPrivatiParams.push(...roleParams);
+            if (selectedAgentId) {
+                countPrivatiParams.push(selectedAgentId);
+            }
+            const countPrivati = await pool.query(countPrivatiQuery, countPrivatiParams);
             
             let roleFilterAziende = roleFilter.replace(/cp\./g, 'ca.');
-            const countAziendeQuery = `SELECT COUNT(*) as count FROM clienti_aziende ca WHERE 1=1 ${contrattiFilterAziende} ${roleFilterAziende}`;
-            const countAziende = await pool.query(countAziendeQuery, roleParams);
+            const countAziendeQuery = `SELECT COUNT(*) as count FROM clienti_aziende ca WHERE 1=1 ${contrattiFilterAziende} ${roleFilterAziende} ${agentFilterAziende}`;
+            const countAziendeParams: any[] = [];
+            countAziendeParams.push(...roleParams);
+            if (selectedAgentId) {
+                countAziendeParams.push(selectedAgentId);
+            }
+            const countAziende = await pool.query(countAziendeQuery, countAziendeParams);
             
             totalCount = parseInt((countPrivati.rows[0] as any).count) + parseInt((countAziende.rows[0] as any).count);
         }
@@ -306,8 +357,15 @@ router.get('/', validatePagination, async (req: Request, res: Response, next: Ne
             } else if (contratti === 'both') {
                 contrattiFilterPrivati = ` AND EXISTS (SELECT 1 FROM contratti_luce cl WHERE cl.cliente_privato_id = cp.id) AND EXISTS (SELECT 1 FROM contratti_gas cg WHERE cg.cliente_privato_id = cp.id)`;
             }
-            const privatiCountQuery = `SELECT COUNT(*) as count FROM clienti_privati cp ${searchFilterPrivati} ${contrattiFilterPrivati} ${roleFilter}`;
-            const privatiCountParams = search ? [`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, ...roleParams] : roleParams;
+            const privatiCountQuery = `SELECT COUNT(*) as count FROM clienti_privati cp ${searchFilterPrivati} ${contrattiFilterPrivati} ${roleFilter} ${agentFilterPrivati}`;
+            const privatiCountParams: any[] = [];
+            if (search) {
+                privatiCountParams.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+            }
+            privatiCountParams.push(...roleParams);
+            if (selectedAgentId) {
+                privatiCountParams.push(selectedAgentId);
+            }
             const privatiCountRes = await pool.query(privatiCountQuery, privatiCountParams);
             privatiCount = parseInt((privatiCountRes.rows[0] as any).count);
 
@@ -316,7 +374,7 @@ router.get('/', validatePagination, async (req: Request, res: Response, next: Ne
                 EXISTS (SELECT 1 FROM contratti_luce cl WHERE cl.cliente_privato_id = cp.id)
                 OR EXISTS (SELECT 1 FROM contratti_gas cg WHERE cg.cliente_privato_id = cp.id)
             )`;
-            const conContrattiPrivatiQuery = `SELECT COUNT(*) as count FROM clienti_privati cp ${searchFilterPrivati} ${conContrattiPrivatiFilter} ${roleFilter}`;
+            const conContrattiPrivatiQuery = `SELECT COUNT(*) as count FROM clienti_privati cp ${searchFilterPrivati} ${conContrattiPrivatiFilter} ${roleFilter} ${agentFilterPrivati}`;
             const conContrattiPrivatiRes = await pool.query(conContrattiPrivatiQuery, privatiCountParams);
             conContrattiCount += parseInt((conContrattiPrivatiRes.rows[0] as any).count);
         }
@@ -340,8 +398,15 @@ router.get('/', validatePagination, async (req: Request, res: Response, next: Ne
             } else if (contratti === 'both') {
                 contrattiFilterAz = ` AND EXISTS (SELECT 1 FROM contratti_luce cl WHERE cl.cliente_azienda_id = ca.id) AND EXISTS (SELECT 1 FROM contratti_gas cg WHERE cg.cliente_azienda_id = ca.id)`;
             }
-            const aziendeCountQuery = `SELECT COUNT(*) as count FROM clienti_aziende ca ${searchFilterAz} ${contrattiFilterAz} ${roleFilterAziende}`;
-            const aziendeCountParams = search ? [`%${search}%`, `%${search}%`, `%${search}%`, ...roleParams] : roleParams;
+            const aziendeCountQuery = `SELECT COUNT(*) as count FROM clienti_aziende ca ${searchFilterAz} ${contrattiFilterAz} ${roleFilterAziende} ${agentFilterAziende}`;
+            const aziendeCountParams: any[] = [];
+            if (search) {
+                aziendeCountParams.push(`%${search}%`, `%${search}%`, `%${search}%`);
+            }
+            aziendeCountParams.push(...roleParams);
+            if (selectedAgentId) {
+                aziendeCountParams.push(selectedAgentId);
+            }
             const aziendeCountRes = await pool.query(aziendeCountQuery, aziendeCountParams);
             aziendeCount = parseInt((aziendeCountRes.rows[0] as any).count);
 
@@ -350,7 +415,7 @@ router.get('/', validatePagination, async (req: Request, res: Response, next: Ne
                 EXISTS (SELECT 1 FROM contratti_luce cl WHERE cl.cliente_azienda_id = ca.id)
                 OR EXISTS (SELECT 1 FROM contratti_gas cg WHERE cg.cliente_azienda_id = ca.id)
             )`;
-            const conContrattiAziendeQuery = `SELECT COUNT(*) as count FROM clienti_aziende ca ${searchFilterAz} ${conContrattiAziendeFilter} ${roleFilterAziende}`;
+            const conContrattiAziendeQuery = `SELECT COUNT(*) as count FROM clienti_aziende ca ${searchFilterAz} ${conContrattiAziendeFilter} ${roleFilterAziende} ${agentFilterAziende}`;
             const conContrattiAziendeRes = await pool.query(conContrattiAziendeQuery, aziendeCountParams);
             conContrattiCount += parseInt((conContrattiAziendeRes.rows[0] as any).count);
         }
@@ -1817,7 +1882,7 @@ router.put('/:tipo/:id/stato', async (req: Request, res: Response, next: NextFun
         // AUTOMAZIONE PAGAMENTO COMMISSIONE
         // ═══════════════════════════════════════════════════════════════════════════
         
-        const statiPagamento = ['Da attivare', 'Chiusa', 'chiusa', 'Attivo']; // Supporta sia maiuscolo che minuscolo
+        const statiPagamento = ['Attivo', 'attivo', 'attiva', 'ATTIVA'];
         
         console.log('🔍 Verifica condizioni automazione commissione:');
         console.log('   - Stato nuovo:', stato);

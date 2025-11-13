@@ -315,7 +315,8 @@ router.post('/:tipoContratto/:contrattoId', authenticate, upload.single('allegat
                         console.log('   - Commissione pattuita:', cliente.commissione_pattuita);
                         console.log('   - Commissione già pagata?', cliente.commissione_pagata);
                         
-                        if (cliente.assigned_agent_id && cliente.commissione_pattuita) {
+                        const triggerAttivo = ['Attivo', 'attivo', 'attiva', 'ATTIVA'].includes(stato_nuovo || '');
+                        if (cliente.assigned_agent_id && cliente.commissione_pattuita && triggerAttivo) {
                             console.log('✅ Condizioni soddisfatte - Creazione compenso automatico');
                             
                             // Verifica se esiste già un compenso per questo contratto specifico
