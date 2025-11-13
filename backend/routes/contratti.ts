@@ -10,6 +10,18 @@ import { validateContrattoLuce, validateContrattoGas, validateFlexibleId } from 
 const router = Router();
 router.use(authenticate);
 
+async function getScadenzaColumn(tableName: 'contratti_luce' | 'contratti_gas'): Promise<'data_scadenza' | 'data_fine'> {
+    try {
+        const res = await pool.query(`PRAGMA table_info(${tableName})`);
+        const cols = res.rows?.map((r: any) => (r.name || r.Name || '').toLowerCase()) || [];
+        if (cols.includes('data_scadenza')) return 'data_scadenza';
+        if (cols.includes('data_fine')) return 'data_fine';
+        return 'data_fine';
+    } catch {
+        return 'data_fine';
+    }
+}
+
 /**
  * GET /api/contratti/luce
  * Lista contratti luce
@@ -18,12 +30,14 @@ router.get('/luce', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const stato = req.query.stato as string;
         const limit = parseInt(req.query.limit as string) || 50;
+        const scadenzaCol = await getScadenzaColumn('contratti_luce');
         
         let query = `
             SELECT cl.*, 
                    cp.nome as cliente_nome, cp.cognome as cliente_cognome, cp.email_principale as cliente_email,
                    ca.ragione_sociale as azienda_nome, ca.email_referente as azienda_email,
-                   CAST((julianday(cl.data_fine) - julianday('now')) AS INTEGER) as giorni_a_scadenza
+                   ${scadenzaCol} as data_scadenza,
+                   CAST((julianday(${scadenzaCol}) - julianday('now')) AS INTEGER) as giorni_a_scadenza
             FROM contratti_luce cl
             LEFT JOIN clienti_privati cp ON cl.cliente_privato_id = cp.id
             LEFT JOIN clienti_aziende ca ON cl.cliente_azienda_id = ca.id
@@ -35,7 +49,7 @@ router.get('/luce', async (req: Request, res: Response, next: NextFunction) => {
             params.push(stato);
         }
         
-        query += ' ORDER BY cl.data_fine ASC LIMIT $' + (params.length + 1);
+        query += ` ORDER BY cl.${scadenzaCol} ASC LIMIT $` + (params.length + 1);
         params.push(limit);
         
         const result = await pool.query(query, params);
@@ -57,12 +71,14 @@ router.get('/gas', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const stato = req.query.stato as string;
         const limit = parseInt(req.query.limit as string) || 50;
+        const scadenzaCol = await getScadenzaColumn('contratti_gas');
         
         let query = `
             SELECT cg.*, 
                    cp.nome as cliente_nome, cp.cognome as cliente_cognome, cp.email_principale as cliente_email,
                    ca.ragione_sociale as azienda_nome, ca.email_referente as azienda_email,
-                   cg.data_scadenza - CURRENT_DATE as giorni_a_scadenza
+                   ${scadenzaCol} as data_scadenza,
+                   CAST((julianday(${scadenzaCol}) - julianday('now')) AS INTEGER) as giorni_a_scadenza
             FROM contratti_gas cg
             LEFT JOIN clienti_privati cp ON cg.cliente_privato_id = cp.id
             LEFT JOIN clienti_aziende ca ON cg.cliente_azienda_id = ca.id
@@ -74,7 +90,7 @@ router.get('/gas', async (req: Request, res: Response, next: NextFunction) => {
             params.push(stato);
         }
         
-        query += ' ORDER BY cg.data_scadenza ASC LIMIT $' + (params.length + 1);
+        query += ` ORDER BY cg.${scadenzaCol} ASC LIMIT $` + (params.length + 1);
         params.push(limit);
         
         const result = await pool.query(query, params);
@@ -104,30 +120,34 @@ router.get('/cliente/:tipo/:id', async (req: Request, res: Response, next: NextF
         const clienteIdColumn = tipo === 'privato' ? 'cliente_privato_id' : 'cliente_azienda_id';
         
         // Contratti luce
+        const scadenzaColL = await getScadenzaColumn('contratti_luce');
         const contrattiLuce = await pool.query(`
             SELECT 
                 cl.*,
+                ${scadenzaColL} as data_scadenza,
                 'luce' as tipo_contratto
             FROM contratti_luce cl
             WHERE cl.${clienteIdColumn} = $1
-            ORDER BY cl.data_fine DESC
+            ORDER BY cl.${scadenzaColL} DESC
         `, [id]);
         
         // Contratti gas
+        const scadenzaColG = await getScadenzaColumn('contratti_gas');
         const contrattiGas = await pool.query(`
             SELECT 
                 cg.*,
+                ${scadenzaColG} as data_scadenza,
                 'gas' as tipo_contratto
             FROM contratti_gas cg
             WHERE cg.${clienteIdColumn} = $1
-            ORDER BY cg.data_fine DESC
+            ORDER BY cg.${scadenzaColG} DESC
         `, [id]);
         
         const contrattiLuceArray = (contrattiLuce.rows || []).map((c: any) => ({ ...c, tipo_contratto: 'luce' }));
         const contrattiGasArray = (contrattiGas.rows || []).map((c: any) => ({ ...c, tipo_contratto: 'gas' }));
         
         const contratti = [...contrattiLuceArray, ...contrattiGasArray]
-            .sort((a: any, b: any) => new Date(b.data_fine).getTime() - new Date(a.data_fine).getTime());
+            .sort((a: any, b: any) => new Date(b.data_scadenza || b.data_fine).getTime() - new Date(a.data_scadenza || a.data_fine).getTime());
         
         res.json({
             success: true,
@@ -141,8 +161,14 @@ router.get('/cliente/:tipo/:id', async (req: Request, res: Response, next: NextF
 router.get('/scadenze', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const giorni = parseInt(req.query.giorni as string) || 60;
+        const soloScaduti = (req.query.soloScaduti as string) === 'true';
         
         // Query diretta per contratti luce in scadenza
+        const scadenzaColL2 = await getScadenzaColumn('contratti_luce');
+        let luceWhereExtra = soloScaduti 
+            ? `AND julianday(${scadenzaColL2}) - julianday('now') < 0` 
+            : `AND julianday(${scadenzaColL2}) - julianday('now') <= $1`;
+
         const scadenzeLuce = await pool.query(`
             SELECT 
                 cl.*,
@@ -152,15 +178,21 @@ router.get('/scadenze', async (req: Request, res: Response, next: NextFunction) 
                 cp.email_principale as cliente_email,
                 ca.ragione_sociale as azienda_nome,
                 ca.email_referente as azienda_email,
-                CAST((julianday(cl.data_fine) - julianday('now')) AS INTEGER) as giorni_a_scadenza
+                ${scadenzaColL2} as data_scadenza,
+                CAST((julianday(${scadenzaColL2}) - julianday('now')) AS INTEGER) as giorni_a_scadenza
             FROM contratti_luce cl
             LEFT JOIN clienti_privati cp ON cl.cliente_privato_id = cp.id
             LEFT JOIN clienti_aziende ca ON cl.cliente_azienda_id = ca.id
-            WHERE cl.stato = 'attivo' 
-            AND julianday(cl.data_fine) - julianday('now') <= $1
-        `, [giorni]);
+            WHERE ${soloScaduti ? '1=1' : "cl.stato IN ('attivo','Attivo','attiva','ATTIVA')"}
+            ${luceWhereExtra}
+        `, soloScaduti ? [] : [giorni]);
         
         // Query diretta per contratti gas in scadenza
+        const scadenzaColG2 = await getScadenzaColumn('contratti_gas');
+        let gasWhereExtra = soloScaduti 
+            ? `AND julianday(${scadenzaColG2}) - julianday('now') < 0` 
+            : `AND julianday(${scadenzaColG2}) - julianday('now') <= $1`;
+
         const scadenzeGas = await pool.query(`
             SELECT 
                 cg.*,
@@ -170,13 +202,14 @@ router.get('/scadenze', async (req: Request, res: Response, next: NextFunction) 
                 cp.email_principale as cliente_email,
                 ca.ragione_sociale as azienda_nome,
                 ca.email_referente as azienda_email,
-                CAST((julianday(cg.data_fine) - julianday('now')) AS INTEGER) as giorni_a_scadenza
+                ${scadenzaColG2} as data_scadenza,
+                CAST((julianday(${scadenzaColG2}) - julianday('now')) AS INTEGER) as giorni_a_scadenza
             FROM contratti_gas cg
             LEFT JOIN clienti_privati cp ON cg.cliente_privato_id = cp.id
             LEFT JOIN clienti_aziende ca ON cg.cliente_azienda_id = ca.id
-            WHERE cg.stato = 'attivo' 
-            AND julianday(cg.data_fine) - julianday('now') <= $1
-        `, [giorni]);
+            WHERE ${soloScaduti ? '1=1' : "cg.stato IN ('attivo','Attivo','attiva','ATTIVA')"}
+            ${gasWhereExtra}
+        `, soloScaduti ? [] : [giorni]);
         
         // Combina e ordina
         const tutteScadenze = [...scadenzeLuce.rows, ...scadenzeGas.rows]
@@ -590,6 +623,7 @@ router.post('/:tipo/:id/send-scadenza-email', authorize('operatore', 'admin', 's
         const table = tipo === 'luce' ? 'contratti_luce' : 'contratti_gas';
         const podField = tipo === 'luce' ? 'pod' : 'pdr';
         
+        const scadenzaCol = await getScadenzaColumn(table as 'contratti_luce' | 'contratti_gas');
         const contrattoQuery = await pool.query(`
             SELECT 
                 c.*,
@@ -597,7 +631,8 @@ router.post('/:tipo/:id/send-scadenza-email', authorize('operatore', 'admin', 's
                 cp.email_principale as cliente_email,
                 ca.ragione_sociale as azienda_nome,
                 ca.email_referente as azienda_email,
-                CAST((julianday(c.data_fine) - julianday('now')) AS INTEGER) as giorni_a_scadenza
+                ${scadenzaCol} as data_scadenza,
+                CAST((julianday(${scadenzaCol}) - julianday('now')) AS INTEGER) as giorni_a_scadenza
             FROM ${table} c
             LEFT JOIN clienti_privati cp ON c.cliente_privato_id = cp.id
             LEFT JOIN clienti_aziende ca ON c.cliente_azienda_id = ca.id
@@ -628,7 +663,7 @@ router.post('/:tipo/:id/send-scadenza-email', authorize('operatore', 'admin', 's
                 <h3 style="color: #1f2937; margin-top: 0;">Dettagli Contratto</h3>
                 <p><strong>Fornitore:</strong> ${contratto.fornitore}</p>
                 <p><strong>${tipo === 'luce' ? 'POD' : 'PDR'}:</strong> ${contratto[podField]}</p>
-                <p><strong>Data Scadenza:</strong> ${new Date(contratto.data_scadenza).toLocaleDateString('it-IT')}</p>
+                <p><strong>Data Scadenza:</strong> ${new Date(contratto.data_scadenza || contratto.data_fine).toLocaleDateString('it-IT')}</p>
             </div>
         `;
         

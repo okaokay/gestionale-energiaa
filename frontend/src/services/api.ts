@@ -92,8 +92,8 @@ export const contrattiAPI = {
     getByCliente: (tipo: 'privato' | 'azienda', clienteId: string) =>
         api.get(`/contratti/cliente/${tipo}/${clienteId}`),
     
-    getScadenze: (giorni?: number) => 
-        api.get('/contratti/scadenze', { params: { giorni } }),
+    getScadenze: (giorni?: number, soloScaduti?: boolean) => 
+        api.get('/contratti/scadenze', { params: { giorni, soloScaduti } }),
     
     createLuce: (data: any) => api.post('/contratti/luce', data),
     
