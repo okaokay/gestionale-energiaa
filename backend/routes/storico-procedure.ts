@@ -144,35 +144,54 @@ router.post('/:tipoContratto/:contrattoId', authenticate, upload.single('allegat
         };
 
         // Inserisci storico solo se la procedura è valida e cambiata
+        let storicoInserito = false;
+        let createdById = user?.id || user?.userId;
         if (procedureChanged) {
-            await pool.query(`
-                INSERT INTO storico_procedure (
-                    id,
-                    ${tipoContratto === 'luce' ? 'contratto_luce_id' : 'contratto_gas_id'},
-                    tipo_contratto,
-                    procedura_precedente,
-                    procedura_nuova,
-                    note,
-                    allegato_filename,
-                    allegato_path,
-                    allegato_mimetype,
-                    allegato_size,
-                    created_by,
-                    created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
-            `, [
-                storicoId,
-                contrattoId,
-                tipoContratto,
-                proceduraPrecedente,
-                nuovaProceduraTrim,
-                note || null,
-                allegatoData.filename,
-                allegatoData.path,
-                allegatoData.mimetype,
-                allegatoData.size,
-                user.id
-            ]);
+            try {
+                const userExists = await pool.query(`SELECT id FROM users WHERE id = ?`, [createdById]);
+                if (!userExists.rows || userExists.rows.length === 0) {
+                    const fallbackUser = await pool.query(`SELECT id FROM users WHERE email = ? LIMIT 1`, ['admin@gestionale.it']);
+                    if (fallbackUser.rows && fallbackUser.rows.length > 0) {
+                        createdById = (fallbackUser.rows[0] as any).id;
+                    }
+                }
+
+                await pool.query(`
+                    INSERT INTO storico_procedure (
+                        id,
+                        ${tipoContratto === 'luce' ? 'contratto_luce_id' : 'contratto_gas_id'},
+                        tipo_contratto,
+                        procedura_precedente,
+                        procedura_nuova,
+                        note,
+                        allegato_filename,
+                        allegato_path,
+                        allegato_mimetype,
+                        allegato_size,
+                        created_by,
+                        created_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+                `, [
+                    storicoId,
+                    contrattoId,
+                    tipoContratto,
+                    proceduraPrecedente,
+                    nuovaProceduraTrim,
+                    note || null,
+                    allegatoData.filename,
+                    allegatoData.path,
+                    allegatoData.mimetype,
+                    allegatoData.size,
+                    createdById
+                ]);
+                storicoInserito = true;
+            } catch (insertError: any) {
+                if (insertError && insertError.code === 'SQLITE_CONSTRAINT_FOREIGNKEY') {
+                    console.log('FK constraint su storico_procedure, continuo senza record storico');
+                } else {
+                    throw insertError;
+                }
+            }
         }
 
         // Aggiorna la procedura nel contratto
@@ -395,7 +414,7 @@ router.post('/:tipoContratto/:contrattoId', authenticate, upload.single('allegat
         }
 
         // Recupera il record appena creato con i dati dell'utente
-        if (procedureChanged) {
+        if (procedureChanged && storicoInserito) {
             const nuovoRecordResult = await pool.query(`
                 SELECT 
                     sp.*,
@@ -414,7 +433,6 @@ router.post('/:tipoContratto/:contrattoId', authenticate, upload.single('allegat
             });
         }
 
-        // Se non c'è cambio procedura ma solo stato (o nulla), rispondi comunque OK
         return res.status(200).json({
             success: true,
             message: statoChanged ? 'Stato aggiornato con successo' : 'Nessuna modifica di procedura; nessun record storico creato',

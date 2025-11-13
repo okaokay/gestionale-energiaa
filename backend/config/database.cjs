@@ -6,7 +6,9 @@ const Database = require('better-sqlite3');
 const { randomUUID } = require('crypto');
 const path = require('path');
 
-const dbPath = path.join(__dirname, '../../gestionale_energia.db');
+const dbPath = process.env.DATABASE_PATH
+  ? path.resolve(process.env.DATABASE_PATH)
+  : path.join(process.cwd(), 'gestionale_energia.db');
 const db = new Database(dbPath);
 
 db.pragma('foreign_keys = ON');
