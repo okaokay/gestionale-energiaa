@@ -513,8 +513,10 @@ router.get('/movimenti', canAccessContabilita, async (req: Request, res: Respons
         const whereClause = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
         
         // Modifica le condizioni per supportare entrambe le tabelle
+        // Mappa alias/colonne: m.* -> c.*, agent_id -> agente_id, data_movimento -> data_maturazione
         let whereClauseCompensi = whereClause.replace(/m\./g, 'c.');
         whereClauseCompensi = whereClauseCompensi.replace(/agent_id/g, 'agente_id');
+        whereClauseCompensi = whereClauseCompensi.replace(/data_movimento/g, 'data_maturazione');
         
         // Se non ci sono condizioni WHERE, aggiungi una condizione sempre vera per i compensi
         if (!whereClauseCompensi) {
