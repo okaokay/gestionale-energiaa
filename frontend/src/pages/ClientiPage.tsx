@@ -70,6 +70,7 @@ interface FilterState {
     consensoMarketing: string;
     newsletter: string;
     dataQuality: string;
+    assignedAgentId: string;
 }
 
 export default function ClientiPage() {
@@ -134,7 +135,8 @@ export default function ClientiPage() {
         haContratti: '',
         consensoMarketing: '',
         newsletter: '',
-        dataQuality: ''
+        dataQuality: '',
+        assignedAgentId: ''
     });
 
     // Statistiche
@@ -425,6 +427,7 @@ export default function ClientiPage() {
                 search: filters.search, 
                 tipo: filters.tipo, 
                 contratti: filters.haContratti || undefined,
+                assigned_agent_id: filters.assignedAgentId || undefined,
                 limit,
                 page: currentPage,
                 _t: Date.now() // Cache busting
@@ -1671,6 +1674,18 @@ export default function ClientiPage() {
                             <option value="">🔹 Tipo Cliente</option>
                             <option value="privati">👤 Solo Privati</option>
                             <option value="aziende">🏢 Solo Aziende</option>
+                        </select>
+                        <select
+                            className="input"
+                            value={filters.assignedAgentId}
+                            onChange={(e) => setFilters({ ...filters, assignedAgentId: e.target.value })}
+                        >
+                            <option value="">👔 Tutti gli agenti</option>
+                            {agenti.map((agente: any) => (
+                                <option key={agente.id} value={agente.id}>
+                                    {agente.nome} {agente.cognome}
+                                </option>
+                            ))}
                         </select>
                         <select
                             className="input"

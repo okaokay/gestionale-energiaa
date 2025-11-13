@@ -6,13 +6,16 @@
 import Database from 'better-sqlite3';
 import * as bcrypt from 'bcryptjs';
 import path from 'path';
+import fs from 'fs';
 import { randomUUID } from 'crypto';
 
 // Usa variabile d'ambiente DATABASE_PATH se disponibile,
 // altrimenti crea il DB nella working directory del processo (/app in Docker)
+const seedPath = path.join(__dirname, '../../seed_data/gestionale_energia_seed.db');
+const defaultPath = path.join(process.cwd(), 'gestionale_energia.db');
 const dbPath = process.env.DATABASE_PATH
   ? path.resolve(process.env.DATABASE_PATH)
-  : path.join(process.cwd(), 'gestionale_energia.db');
+  : (fs.existsSync(seedPath) ? seedPath : defaultPath);
 const db = new Database(dbPath);
 
 async function runMigration() {
@@ -685,4 +688,5 @@ async function runMigration() {
 }
 
 runMigration().catch(console.error);
+
 

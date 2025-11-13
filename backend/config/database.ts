@@ -5,11 +5,14 @@
 import Database from 'better-sqlite3';
 import { randomUUID } from 'crypto';
 import path from 'path';
+import fs from 'fs';
 
 // Preferisci DATABASE_PATH se definito, altrimenti usa la working directory del processo
+const seedPath = path.join(__dirname, '../../seed_data/gestionale_energia_seed.db');
+const defaultPath = path.join(process.cwd(), 'gestionale_energia.db');
 const dbPath = process.env.DATABASE_PATH
   ? path.resolve(process.env.DATABASE_PATH)
-  : path.join(process.cwd(), 'gestionale_energia.db');
+  : (fs.existsSync(seedPath) ? seedPath : defaultPath);
 const db = new Database(dbPath);
 
 db.pragma('foreign_keys = ON');
@@ -117,3 +120,4 @@ export function generateUUID(): string {
 }
 
 export default { pool, testConnection, closePool, generateUUID };
+
