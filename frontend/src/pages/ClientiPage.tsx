@@ -943,7 +943,8 @@ export default function ClientiPage() {
             haContratti: '',
             consensoMarketing: '',
             newsletter: '',
-            dataQuality: ''
+            dataQuality: '',
+            assignedAgentId: ''
         });
     };
     
@@ -2353,3 +2354,6 @@ export default function ClientiPage() {
         </div>
     );
 }
+
+
+
