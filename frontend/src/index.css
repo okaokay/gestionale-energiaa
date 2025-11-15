@@ -38,3 +38,8 @@
   }
 }
 
+button[title="Importa CSV con Mappatura Campi (Stile WooCommerce)"],
+button[title="Esporta CSV"] {
+  display: none !important;
+}
+

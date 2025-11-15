@@ -26,13 +26,20 @@ export default function Layout({ children }: LayoutProps) {
     };
     
     // 🔐 Menu items filtrati per ruolo
-    const allMenuItems = [
+    type MenuItem = {
+        path: string;
+        icon: any;
+        label: string;
+        roles: string[];
+        beta?: boolean;
+    };
+    const allMenuItems: MenuItem[] = [
         { path: '/', icon: Home, label: 'Dashboard', roles: ['super_admin', 'admin', 'operatore'] },
         { path: '/clienti', icon: Users, label: 'Clienti', roles: ['super_admin', 'admin', 'operatore'] },
         { path: '/agenti', icon: UserCheck, label: 'Agenti', roles: ['super_admin', 'admin'] }, // ❌ Nascosto per operatori
-        { path: '/contratti', icon: FileText, label: 'Contratti', roles: ['super_admin', 'admin', 'operatore'] },
+        { path: '/contratti', icon: FileText, label: 'Contratti', roles: ['super_admin', 'admin', 'operatore'], beta: true },
         { path: '/scadenze', icon: Calendar, label: 'Scadenze', roles: ['super_admin', 'admin', 'operatore'] },
-        { path: '/offerte', icon: Zap, label: 'Offerte & AI', roles: ['super_admin', 'admin'] }, // ❌ Nascosto per operatori
+        { path: '/offerte', icon: Zap, label: 'Offerte & AI', roles: ['super_admin', 'admin'], beta: true }, // ❌ Nascosto per operatori
         { path: '/email-marketing', icon: Mail, label: 'Email Marketing', roles: ['super_admin', 'admin', 'operatore'] },
         { path: '/contabilita', icon: Euro, label: 'Contabilità', roles: ['super_admin', 'admin'] }, // ❌ Nascosto per operatori
     ];
@@ -112,6 +119,11 @@ export default function Layout({ children }: LayoutProps) {
                                     >
                                         <Icon size={20} />
                                         <span className="ml-3">{item.label}</span>
+                                        {item.beta && (
+                                            <span className="ml-2 text-[10px] px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 border border-yellow-200">
+                                                BETA
+                                            </span>
+                                        )}
                                     </Link>
                                 </li>
                             );
