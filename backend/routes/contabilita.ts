@@ -545,15 +545,6 @@ router.get('/movimenti', canAccessContabilita, async (req: Request, res: Respons
                     'contabilita_movimenti' as source_table
                 FROM contabilita_movimenti m
                 ${whereClause}
-                ${whereClause ? 'AND' : 'WHERE'} NOT (
-                    tipo = 'compenso' 
-                    AND EXISTS (
-                        SELECT 1 FROM compensi c 
-                        WHERE c.agente_id = m.agent_id 
-                        AND c.cliente_id = m.cliente_id
-                        AND ABS(c.importo - m.importo) < 0.01
-                    )
-                )
                 
                 UNION ALL
                 
