@@ -321,8 +321,8 @@ router.post('/:tipoContratto/:contrattoId', authenticate, upload.single('allegat
                 const tabellaCliente = clienteTipo === 'privato' ? 'clienti_privati' : 'clienti_aziende';
                 
                 try {
-                    const clienteResult = await pool.query(`
-                        SELECT assigned_agent_id, commissione_pattuita, commissione_pagata 
+                    let clienteResult = await pool.query(`
+                        SELECT assigned_agent_id, commissione_pattuita, commissione_pagata, commissione_luce, commissione_gas 
                         FROM ${tabellaCliente} 
                         WHERE id = ?
                     `, [clienteId]);
@@ -335,7 +335,16 @@ router.post('/:tipoContratto/:contrattoId', authenticate, upload.single('allegat
                         console.log('   - Commissione già pagata?', cliente.commissione_pagata);
                         
                         const triggerAttivo = ['Attivo', 'attivo', 'attiva', 'ATTIVA'].includes(stato_nuovo || '');
-                        if (cliente.assigned_agent_id && cliente.commissione_pattuita && triggerAttivo) {
+                        const commissioneImporto = (() => {
+                            if (tipoContratto === 'luce') {
+                                return (cliente as any).commissione_luce ?? cliente.commissione_pattuita;
+                            }
+                            if (tipoContratto === 'gas') {
+                                return (cliente as any).commissione_gas ?? cliente.commissione_pattuita;
+                            }
+                            return cliente.commissione_pattuita;
+                        })();
+                        if (cliente.assigned_agent_id && commissioneImporto && triggerAttivo) {
                             console.log('✅ Condizioni soddisfatte - Creazione compenso automatico');
                             
                             // Verifica se esiste già un compenso per questo contratto specifico
@@ -369,10 +378,10 @@ router.post('/:tipoContratto/:contrattoId', authenticate, upload.single('allegat
                                     clienteTipo,
                                     contrattoId,
                                     tipoContratto,
-                                    cliente.commissione_pattuita,
+                                    commissioneImporto,
                                     'commissione_contratto',
                                     `Commissione per contratto ${tipoContratto.toUpperCase()} - Cambio stato da ${stato_precedente} a ${stato_nuovo}`,
-                                    'maturato',
+                                    'da_pagare',
                                     new Date().toISOString()
                                 ]);
                                 
@@ -390,7 +399,7 @@ router.post('/:tipoContratto/:contrattoId', authenticate, upload.single('allegat
                                     compensoId,
                                     clienteId,
                                     clienteTipo,
-                                    `Compenso automatico creato per contratto ${tipoContratto.toUpperCase()} - Importo: €${cliente.commissione_pattuita}`,
+                                    `Compenso automatico creato per contratto ${tipoContratto.toUpperCase()} - Importo: €${commissioneImporto}`,
                                     user.id,
                                     `${user.nome} ${user.cognome}`
                                 ]);
