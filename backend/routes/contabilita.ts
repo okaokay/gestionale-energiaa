@@ -581,7 +581,7 @@ router.get('/movimenti', canAccessContabilita, async (req: Request, res: Respons
             ORDER BY movimenti_uniti.data_movimento DESC, movimenti_uniti.created_at DESC
             LIMIT 100
         `, [...params, ...params]);
-        
+        console.log('📊 Movimenti (unione contabilita_movimenti + compensi):', movimentiResult.rows.length);
         res.json({ success: true, data: movimentiResult.rows });
     } catch (error: any) {
         console.error('Errore caricamento movimenti:', error);

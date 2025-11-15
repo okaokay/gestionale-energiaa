@@ -2354,6 +2354,3 @@ export default function ClientiPage() {
         </div>
     );
 }
-
-
-
